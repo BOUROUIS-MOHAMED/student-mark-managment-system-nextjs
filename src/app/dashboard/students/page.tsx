@@ -1,12 +1,35 @@
+"use client"
 import { Separator } from "@/components/ui/separator";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import fakeData from "@/app/dashboard/fake-data/fakeData";
 
-export default async function Records() {
-  // Fetch students info from database
-  // Convert class instances to plain objects
-  const data = JSON.parse(JSON.stringify(fakeData.students));
+import {useCallback, useEffect, useState} from "react";
+import {getAllStudents} from "@/app/dashboard/services/StudentService";
+import {Student} from "@/app/dashboard/Models/Student";
+
+export default  function Records() {
+    
+    const [students, setStudents] = useState<Student[]>([]);
+    
+
+    const loadData = useCallback(async () => {
+        const response = await getAllStudents();
+        console.log(response);
+
+        if (response.status) {
+            setStudents(response.data!);
+
+        } else {
+
+            setStudents([]);
+        }
+    }, []); // ✅ Dependencies are properly managed
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]); // ✅ No more infinite re-renders
+
+
   return (
     <div className="flex flex-col justify-center">
       <div>
@@ -22,7 +45,7 @@ export default async function Records() {
       {/* Card - Contains table and button to add new students */}
       <div>
         {/* Table - To display Attendance Records */}
-        <DataTable columns={columns} data={data} />
+        <DataTable columns={columns} data={students} />
       </div>
     </div>
   );

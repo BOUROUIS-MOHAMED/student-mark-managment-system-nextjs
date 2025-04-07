@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -20,11 +19,11 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
 
-import { api } from "@/lib/api";
-import { ProfessorSchema } from "@/app/dashboard/Models/schema";
+
+import { TeacherSchema } from "@/app/dashboard/Models/schema";
 
 // Schema for form validation (using Zod)
-const FormSchema = ProfessorSchema;
+const FormSchema = TeacherSchema;
 
 export default function AddProfessorForm() {
   // State - used to close dialog after a professor is added
@@ -33,8 +32,6 @@ export default function AddProfessorForm() {
   // State - used for button loading spinners during professor creation
   const [isBeingAdded, setIsBeingAdded] = useState(false);
 
-  // Used to refresh the page data after a professor is added (since page is a Server Component)
-  const router = useRouter();
 
   // Form hook - used for form validation and submission logic (using react-hook-form)
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -74,83 +71,18 @@ export default function AddProfessorForm() {
                 {/* Input field - for username */}
                 <FormField
                   control={form.control}
-                  name="username"
+                  name="name"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Username" {...field} />
+                        <Input placeholder="Name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* Input field - for email */}
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Input field - for CIN */}
-                <FormField
-                  control={form.control}
-                  name="cin"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>CIN</FormLabel>
-                      <FormControl>
-                        <Input placeholder="CIN" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Input field - for password */}
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Dropdown - for role */}
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Role</FormLabel>
-                      <FormControl>
-                        <select {...field} className="input">
-                          <option value="professor">Professor</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 {/* Input field - for phone */}
                 <FormField
@@ -167,39 +99,7 @@ export default function AddProfessorForm() {
                   )}
                 />
 
-                {/* Input field - for department */}
-                <FormField
-                  control={form.control}
-                  name="department"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Department</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Department" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                {/* Dropdown - for grade */}
-                <FormField
-                  control={form.control}
-                  name="grade"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Grade</FormLabel>
-                      <FormControl>
-                        <select {...field} className="input">
-                          <option value="Assistant">Assistant</option>
-                          <option value="Associate">Associate</option>
-                          <option value="Full">Full</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 {/* Submit button - uses state for loading spinner */}
                 <Button type="submit" disabled={isBeingAdded}>

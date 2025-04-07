@@ -3,11 +3,10 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header";
+import ContextActionMenu from "@/components/dashboard/professor/context-action-menu";
+import {Teacher} from "@/app/dashboard/Models/Teacher";
 
-import ContextActionMenu from "@/components/dashboard/students/context-action-menu";
-import { StudentModel } from "@/app/dashboard/Models/StudentModel";
-
-export const columns: ColumnDef<StudentModel>[] = [
+export const columns: ColumnDef<Teacher>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -38,17 +37,18 @@ export const columns: ColumnDef<StudentModel>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "cin", // 'cin' for the professor's CIN field (unique ID)
+    accessorKey: "uuid", // 'cin' for the professor's CIN field (unique ID)
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="CIN" />
+        <DataTableColumnHeader column={column} title="UUID" />
     ),
   },
   {
-    accessorKey: "username", // 'username' for the professor's username
+    accessorKey: "name", // 'cin' for the professor's CIN field (unique ID)
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Username" />
+      <DataTableColumnHeader column={column} title="Name" />
     ),
   },
+
   {
     accessorKey: "email", // 'email' for the professor's email address
     header: ({ column }) => (
@@ -62,40 +62,16 @@ export const columns: ColumnDef<StudentModel>[] = [
     ),
   },
   {
-    accessorKey: "department", // 'department' for the professor's department
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Department" />
-    ),
-  },
-  {
-    accessorKey: "grade", // 'grade' for the professor's grade
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Grade" />
-    ),
-  },
-  {
-    accessorKey: "createdAt", // 'createdAt' for the professor's creation date
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Created At" />
-    ),
-  },
-  {
-    accessorKey: "updatedAt", // 'updatedAt' for the professor's last update date
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Updated At" />
-    ),
-  },
-  {
     accessorKey: "actions",
     header: "Actions",
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      const student = row.original;
+      const model = row.original;
 
       return (
         <div className="flex flex-row gap-1">
-          <ContextActionMenu student={student} />
+          <ContextActionMenu teacher={model} />
         </div>
       );
     },

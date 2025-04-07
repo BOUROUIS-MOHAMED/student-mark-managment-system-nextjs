@@ -25,13 +25,9 @@ import {
 import { DataTablePagination } from "@/components/ui/data-table/pagination";
 import { DataTableViewOptions } from "@/components/ui/data-table/view-options";
 import { Input } from "@/components/ui/input";
+import DeleteSelectedNote from "@/components/dashboard/result/delete-selected-records";
+import AddNoteForm from "@/components/dashboard/result/form-note-create";
 
-import DeleteSelectedStudents from "@/components/dashboard/projects/delete-selected-records";
-import AddStudentForm from "@/components/dashboard/projects/form-project-create";
-import AddProjectForm from "@/components/dashboard/projects/form-project-create";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -75,12 +71,12 @@ export function DataTable<TData, TValue>({
         <div className="flex gap-2">
           {/* Search Box - to filter records by student ID */}
           <Input
-            placeholder="Search by student ID..."
+            placeholder="Search by type ..."
             defaultValue={
-              (table.getColumn("id")?.getFilterValue() as string) ?? ""
+              (table.getColumn("type")?.getFilterValue() as string) ?? ""
             }
             onChange={(event) =>
-              table.getColumn("id")?.setFilterValue(event.target.value)
+              table.getColumn("type")?.setFilterValue(event.target.value)
             }
             className="max-w-sm shrink-0"
           />
@@ -89,13 +85,10 @@ export function DataTable<TData, TValue>({
         </div>
         <div className="flex gap-2">
           {/* Delete Selected Records (Button) - used to delete multiple selected Attendance Records */}
-          <DeleteSelectedStudents table={table} />
-          <Link href={"/dashboard/manage"}>
-            <Button>
-              <Plus size={20} className="mr-2" />
-              NEW CLASS RESULTS
-            </Button>
-          </Link>
+          <DeleteSelectedNote table={table} />
+
+          {/* Create New Records (Modal + Form) - used to create new Attendance Records */}
+          <AddNoteForm />
         </div>
       </div>
       <div className="rounded-md border">

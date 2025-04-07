@@ -1,25 +1,48 @@
-import React from "react";
-import { api } from "@/app/trpc/server";
-import fakeData from "@/app/dashboard/fake-data/fakeData";
+"use client"
+import React, {useCallback, useEffect, useState} from "react";
+import {Classroom} from "@/app/dashboard/Models/Classroom";
+import {getClassroomById} from "@/app/dashboard/services/ClassroomService";
 
-export default async function IndividualStudentPage({
+
+export default  function DetailsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const data = fakeData.classes.find(
-    (value) => value.id.toString() === params.id.toString(),
-  );
+  const [model, setModel] = useState<Classroom | null>(null);
+
+
+  const loadData = useCallback(async () => {
+    const response = await getClassroomById(params.id);
+    console.log(response);
+
+    if (response.status) {
+      setModel(response.data!);
+
+    } else {
+
+      setModel(null);
+    }
+  }, []); // ✅ Dependencies are properly managed
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]); // ✅ No more infinite re-renders
+
+
 
   return (
     <div>
-      <p>IndividualStudentPage</p>
-      {!data && <p>Error: Class doesn&apos;t exist with ID: {params.id}</p>}
-      {!!data && (
+      <p>Info</p>
+      {!model && <p>Error: nothing founded with ID: {params.id}</p>}
+      {!!model && (
         <div>
-          <p>{data.class_name}</p>
-          <p>{data.class_level}</p>
-          <p>{data.department}</p>
+          <p>{model.name}</p>
+          <p>{model.capacity}</p>
+
+          <p>{model.createdAt.toLocaleString()}</p>
+          <p>{model.updatedAt.toLocaleString()}</p>
+
         </div>
       )}
     </div>

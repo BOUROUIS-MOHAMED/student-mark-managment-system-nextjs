@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
-import { type Module } from '@prisma/client'
+
 import {
   Copy,
   ExternalLink,

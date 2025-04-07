@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { type Student } from "@prisma/client";
 import {
   Copy,
-  ExternalLink,
+  ExternalLink, FileDown,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -24,6 +23,8 @@ import Modal from "@/components/ui/modal";
 
 import DeleteStudent from "@/components/dashboard/students/form-student-delete";
 import EditStudentForm from "@/components/dashboard/students/form-student-edit";
+import {Student} from "@/app/dashboard/Models/Student";
+import {downloadStudentNotesPdf} from "@/app/dashboard/services/StudentService";
 
 export default function ContextActionMenu({ student }: { student: Student }) {
   // State - to manage the open/close state of the modals and dropdown
@@ -48,7 +49,7 @@ export default function ContextActionMenu({ student }: { student: Student }) {
           className="cursor-pointer"
           onClick={() =>
             // Copies the attendance record ID to the clipboard
-            navigator.clipboard.writeText(student.studentId)
+            navigator.clipboard.writeText(student.id.toString())
           }
         >
           <Copy className="mr-2 h-4 w-4" />
@@ -60,6 +61,19 @@ export default function ContextActionMenu({ student }: { student: Student }) {
             <ExternalLink className="mr-2 h-4 w-4" />
             View info
           </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={async () => {
+              try {
+                await downloadStudentNotesPdf(student.uuid); // assuming `note.student.uuid` exists
+              } catch (error) {
+                console.error("Failed to download PDF", error);
+              }
+            }}
+        >
+          <FileDown className="mr-2 h-4 w-4" />
+          Download PDF
         </DropdownMenuItem>
 
         {/* Modal - to edit records */}

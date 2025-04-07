@@ -3,12 +3,11 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header";
+import ContextActionMenu from "@/components/dashboard/result/context-action-menu";
+import {Note} from "@/app/dashboard/Models/Note";
 
-import ContextActionMenu from "@/components/dashboard/students/context-action-menu";
-import { StudentModel } from "@/app/dashboard/Models/StudentModel";
-import { ProjectModel } from "@/app/dashboard/Models/ProjectModel";
 
-export const columns: ColumnDef<ProjectModel>[] = [
+export const columns: ColumnDef<Note>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -39,63 +38,27 @@ export const columns: ColumnDef<ProjectModel>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "student",
+    accessorKey: "score",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Score" />
+    ),
+  },
+
+  {
+    accessorKey: "type",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Type" />
+    ),
+  },
+  {
+    accessorKey: "student.name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Student" />
     ),
-  },
-  {
-    accessorKey: "professor",
+  },  {
+    accessorKey: "teacher.name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Professor" />
-    ),
-  },
-  {
-    accessorKey: "subject",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Subject " />
-    ),
-  },
-  {
-    accessorKey: "classModel",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Class" />
-    ),
-  },
-  {
-    accessorKey: "note_ds",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Note DS" />
-    ),
-  },
-  {
-    accessorKey: "note_tp",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Note TP" />
-    ),
-  },
-  {
-    accessorKey: "note_ex",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Note Exam" />
-    ),
-  },
-  {
-    accessorKey: "year",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Year" />
-    ),
-  },
-  {
-    accessorKey: "semester",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Semester" />
-    ),
-  },
-  {
-    accessorKey: "result_status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Result Status" />
+      <DataTableColumnHeader column={column} title="Teacher" />
     ),
   },
   {
@@ -104,11 +67,11 @@ export const columns: ColumnDef<ProjectModel>[] = [
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      const student = row.original;
+      const model = row.original;
 
       return (
         <div className="flex flex-row gap-1">
-          <ContextActionMenu student={student} />
+          <ContextActionMenu note={model} />
         </div>
       );
     },

@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
 
-import { api } from "@/lib/api";
+
 import { StudentSchema } from "@/app/dashboard/Models/schema";
 
 // Schema for form validation (using Zod)
@@ -33,8 +33,7 @@ export default function AddStudentForm() {
   // State - used for button loading spinners during student creation
   const [isBeingAdded, setIsBeingAdded] = useState(false);
 
-  // Used to refresh the page data after a student is added (since page is a Server Component)
-  const router = useRouter();
+
 
   // Form hook - used for form validation and submission logic (using react-hook-form)
   const form = useForm<z.infer<typeof FormSchema>>({

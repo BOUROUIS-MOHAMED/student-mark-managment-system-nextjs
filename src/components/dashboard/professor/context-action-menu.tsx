@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { type Student } from "@prisma/client";
+
 import {
   Copy,
   ExternalLink,
@@ -21,11 +21,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Modal from "@/components/ui/modal";
+import {Teacher} from "@/app/dashboard/Models/Teacher";
+import EditTeacherForm from "@/components/dashboard/professor/form-professor-edit";
+import DeleteTeacher from "@/components/dashboard/professor/form-professor-delete";
 
-import DeleteStudent from "@/components/dashboard/students/form-student-delete";
-import EditStudentForm from "@/components/dashboard/students/form-student-edit";
 
-export default function ContextActionMenu({ student }: { student: Student }) {
+
+export default function ContextActionMenu({ teacher }: { teacher: Teacher }) {
   // State - to manage the open/close state of the modals and dropdown
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -48,7 +50,7 @@ export default function ContextActionMenu({ student }: { student: Student }) {
           className="cursor-pointer"
           onClick={() =>
             // Copies the attendance record ID to the clipboard
-            navigator.clipboard.writeText(student.studentId)
+            navigator.clipboard.writeText(teacher.id.toString())
           }
         >
           <Copy className="mr-2 h-4 w-4" />
@@ -79,8 +81,8 @@ export default function ContextActionMenu({ student }: { student: Student }) {
                 Edit the details of this attendance record.
               </Modal.Description>
             </Modal.Header>
-            <EditStudentForm
-              student={student}
+            <EditTeacherForm
+              teacher={teacher}
               closeModalAndDropdown={() => {
                 setOpenEditModal(false);
                 setOpenDropdown(false);
@@ -109,8 +111,8 @@ export default function ContextActionMenu({ student }: { student: Student }) {
               </Modal.Description>
             </Modal.Header>
             <Modal.Footer>
-              <DeleteStudent
-                student={student}
+              <DeleteTeacher
+                teacher={teacher}
                 closeModalAndDropdown={() => {
                   setOpenDeleteModal(false);
                   setOpenDropdown(false);

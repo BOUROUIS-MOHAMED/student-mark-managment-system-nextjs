@@ -1,14 +1,14 @@
 "use client";
 
 import { type ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
-
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header";
+import ContextActionMenu from "@/components/dashboard/course/context-action-menu";
+import {Course} from "@/app/dashboard/Models/Course";
 
-import ContextActionMenu from "@/components/dashboard/lecture/context-action-menu";
 
-export const columns: ColumnDef<Lecture>[] = [
+
+export const columns: ColumnDef<Course>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -32,28 +32,23 @@ export const columns: ColumnDef<Lecture>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id",
+    accessorKey: "id", // Use 'id' as the student ID field
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ID" />
     ),
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: "name", 
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="name" />
+      <DataTableColumnHeader column={column} title="Name" />
     ),
   },
+
   {
     accessorKey: "description",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="description" />
-    ),
-  },
-  {
-    accessorKey: "class",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Class" />
+      <DataTableColumnHeader column={column} title="Description" />
     ),
   },
   {
@@ -62,11 +57,11 @@ export const columns: ColumnDef<Lecture>[] = [
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      const lecture = row.original;
+      const model = row.original;
 
       return (
         <div className="flex flex-row gap-1">
-          <ContextActionMenu lecture={lecture} />
+          <ContextActionMenu course={model} />
         </div>
       );
     },

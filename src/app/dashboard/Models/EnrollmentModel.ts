@@ -1,12 +1,12 @@
-import { ProfessorModel } from "@/app/dashboard/Models/ProfessorModel";
-import { SubjectModel } from "@/app/dashboard/Models/SubjectModel";
-import { ClassModel } from "@/app/dashboard/Models/ClassModel";
+import { Teacher } from "@/app/dashboard/Models/Teacher";
+import { Course } from "@/app/dashboard/Models/Course";
+import { Classroom } from "@/app/dashboard/Models/Classroom";
 
 export class EnrollmentModel {
   id: number;
-  professor: ProfessorModel;
-  subject: SubjectModel;
-  classModel: ClassModel;
+  professor: Teacher;
+  subject: Course;
+  classModel: Classroom;
   coe_subject: number;
   coe_tp: number;
   coe_ex: number;
@@ -14,9 +14,9 @@ export class EnrollmentModel {
 
   constructor(
     id_enrollment: number,
-    professor: ProfessorModel,
-    subject: SubjectModel,
-    classModel: ClassModel,
+    professor: Teacher,
+    subject: Course,
+    classModel: Classroom,
     coe_subject: number,
     coe_tp: number,
     coe_ex: number,

@@ -25,9 +25,8 @@ import {
 import { DataTablePagination } from "@/components/ui/data-table/pagination";
 import { DataTableViewOptions } from "@/components/ui/data-table/view-options";
 import { Input } from "@/components/ui/input";
-
-import DeleteSelectedStudents from "@/components/dashboard/schoolClass/delete-selected-records";
-import AddClassForm from "@/components/dashboard/schoolClass/form-class-create";
+import DeleteSelectedClassroom from "@/components/dashboard/schoolClass/delete-selected-records";
+import AddClassroomForm from "@/components/dashboard/schoolClass/form-classroom-create";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -71,12 +70,12 @@ export function DataTable<TData, TValue>({
         <div className="flex gap-2">
           {/* Search Box - to filter records by student ID */}
           <Input
-            placeholder="Search by student ID..."
+            placeholder="Search by email ..."
             defaultValue={
-              (table.getColumn("studentId")?.getFilterValue() as string) ?? ""
+              (table.getColumn("name")?.getFilterValue() as string) ?? ""
             }
             onChange={(event) =>
-              table.getColumn("studentId")?.setFilterValue(event.target.value)
+              table.getColumn("name")?.setFilterValue(event.target.value)
             }
             className="max-w-sm shrink-0"
           />
@@ -85,10 +84,10 @@ export function DataTable<TData, TValue>({
         </div>
         <div className="flex gap-2">
           {/* Delete Selected Records (Button) - used to delete multiple selected Attendance Records */}
-          <DeleteSelectedStudents table={table} />
+          <DeleteSelectedClassroom table={table} />
 
           {/* Create New Records (Modal + Form) - used to create new Attendance Records */}
-          <AddClassForm />
+          <AddClassroomForm />
         </div>
       </div>
       <div className="rounded-md border">

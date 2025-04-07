@@ -5,9 +5,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header";
 
 import ContextActionMenu from "@/components/dashboard/students/context-action-menu";
-import { StudentModel } from "@/app/dashboard/Models/StudentModel";
+import { Student } from "@/app/dashboard/Models/Student";
 
-export const columns: ColumnDef<StudentModel>[] = [
+export const columns: ColumnDef<Student>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -38,35 +38,32 @@ export const columns: ColumnDef<StudentModel>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "cin", // Mapping to 'cin' as a unique ID for the student
+    accessorKey: "uuid", // 'cin' for the professor's CIN field (unique ID)
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="CIN" />
+        <DataTableColumnHeader column={column} title="UUID" />
     ),
   },
   {
-    accessorKey: "username", // 'username' for the first name representation
+    accessorKey: "name", // 'cin' for the professor's CIN field (unique ID)
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Username" />
+        <DataTableColumnHeader column={column} title="Name" />
+    ),
+  },
+
+  {
+    accessorKey: "email", // 'email' for the professor's email address
+    header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Email" />
     ),
   },
   {
-    accessorKey: "email", // 'email' for the last name representation (if applicable)
+    accessorKey: "phone", // 'phone' for the professor's phone number
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Email" />
+        <DataTableColumnHeader column={column} title="Phone" />
     ),
   },
-  {
-    accessorKey: "email_univ", // University email field
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="University Email" />
-    ),
-  },
-  {
-    accessorKey: "phone", // 'phone' field
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Phone" />
-    ),
-  },
+
+
   {
     accessorKey: "actions",
     header: "Actions",

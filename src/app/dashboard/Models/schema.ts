@@ -16,25 +16,61 @@ const UserSchema = z.object({
 });
 
 // Professor Schema (extends User)
-const ProfessorSchema = UserSchema.extend({
+const TeacherSchema = z.object({
   phone: z.string().regex(/^\+212[5-7]\d{8}$/),
-  department: z.string().min(2).max(50),
-  grade: z.enum(["Assistant", "Associate", "Full"]),
+  name: z.string().min(2).max(50),
+
+});
+
+const PfeTeacherIdSchema = z.object({
+  pfeId: z.number(),
+  teacherId: z.number(),
+
+});
+
+const TeacherClassroomIdSchema = z.object({
+  teacherId: z.number(),
+  classroomId: z.number(),
+
 }).strict();
 
-// Class Schema
-const ClassSchema = z.object({
-  id: z.number().positive(),
-  class_name: z.string().min(2).max(50),
-  class_level: z.string().min(2).max(20),
-  department: z.string().min(2).max(50),
+const TeacherCourseIdSchema = z.object({
+  teacherId: z.number(),
+  courseId: z.number(),
 });
+const CourseStudentIdSchema = z.object({
+
+  courseId: z.number(),
+  studentId: z.number(),
+});
+
+
+
+// Class Schema
+const ClassroomSchema = z.object({
+  id: z.number().positive(),
+  name: z.string().min(2).max(50),
+  capacity: z.number().min(0).max(1000),
+});
+
+const TeacherClassroomSchema = z.object({
+  id: TeacherClassroomIdSchema,
+  teacher: TeacherSchema,
+  classroom: ClassroomSchema,
+});
+
+
 // Subject Schema
-const SubjectSchema = z.object({
+const CourseSchema = z.object({
   id: z.number().positive(),
   name: z.string().min(3).max(100),
-  description: z.string().max(500).optional(),
-  class: ClassSchema,
+  description: z.string().max(500),
+});
+
+const TeacherCourseSchema = z.object({
+  id: TeacherCourseIdSchema,
+  teacher: TeacherSchema,
+  course: CourseSchema,
 });
 
 // Student Schema (extends User)
@@ -49,9 +85,9 @@ const AdminSchema = UserSchema.strict();
 // Enrollment Schema
 const EnrollmentSchema = z.object({
   id: z.number().positive(),
-  professor: ProfessorSchema,
-  subject: SubjectSchema,
-  classModel: ClassSchema,
+  professor: TeacherSchema,
+  subject: CourseSchema,
+  classModel: ClassroomSchema,
   coe_subject: z.number().min(0).max(100),
   coe_tp: z.number().min(0).max(100),
   coe_ds: z.number().min(0).max(100),
@@ -59,50 +95,49 @@ const EnrollmentSchema = z.object({
 });
 
 // Project Schema
-const ProjectSchema = z.object({
-  id: z.number().positive(),
-  code: z
-    .string()
-    .length(6)
-    .regex(/^[A-Z0-9]+$/),
+const PfeSchema = z.object({
+  id: z.number(),
   name: z.string().min(5).max(100),
-  student_one: StudentSchema,
-  student_two: StudentSchema.optional(),
-  encadrant: ProfessorSchema,
-  rapporteur: ProfessorSchema,
-  president_jury: ProfessorSchema,
-  datePresentation: z.coerce.date(),
-  type: z.enum(["PFE", "Doctoral", "Research"]),
-  mark: z.string().max(3),
-  note: z.string().max(4),
-  result: z.number().min(0).max(20),
-  presentation_link: z.string().url(),
-  rapport_link: z.string().url(),
-  project_link: z.string().url(),
+  status: z.string(),
+});
+const CourseStudentSchema = z.object({
+  id: CourseStudentIdSchema,
+  student: StudentSchema,
+  course: CourseSchema,
+});
+// Result Schema
+const NoteSchema = z.object({
+  id: z.number().optional(),
+  student: z.string(),
+  teacher: z.string(),
+  score: z.number().min(0).max(20),
+  type: z.string(),
 });
 
-// Result Schema
-const ResultSchema = z.object({
-  id: z.number().positive(),
-  student: StudentSchema,
-  enrollment: EnrollmentSchema,
-  note_ds: z.number().min(0).max(20),
-  note_tp: z.number().min(0).max(20),
-  note_ex: z.number().min(0).max(20),
-  year: z.coerce.date(),
-  semester: z.number().min(1).max(2),
-  result_status: z.enum(["draft", "submitted", "approved", "published"]),
+const PfeTeacherSchema = z.object({
+  id: PfeTeacherIdSchema,
+  teacher: TeacherSchema,
+  pfe:PfeSchema,
+
 });
 
 // Export all schemas
 export {
+  CourseStudentSchema,
+    CourseStudentIdSchema,
+  TeacherCourseIdSchema,
+  TeacherCourseSchema,
+  TeacherClassroomIdSchema,
+  TeacherClassroomSchema,
+  PfeTeacherSchema,
+  PfeTeacherIdSchema,
   UserSchema,
   StudentSchema,
-  ProfessorSchema,
+  TeacherSchema,
   AdminSchema,
-  ClassSchema,
-  SubjectSchema,
+  ClassroomSchema,
+  CourseSchema,
   EnrollmentSchema,
-  ProjectSchema,
-  ResultSchema,
+  PfeSchema,
+  NoteSchema,
 };

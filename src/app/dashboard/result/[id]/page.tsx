@@ -1,34 +1,48 @@
-import React from "react";
-import { api } from "@/app/trpc/server";
-import fakeData from "@/app/dashboard/fake-data/fakeData";
+"use client"
+import React, {useCallback, useEffect, useState} from "react";
+import {Classroom} from "@/app/dashboard/Models/Classroom";
+import {getClassroomById} from "@/app/dashboard/services/ClassroomService";
 
-export default async function IndividualStudentPage({
+
+export default  function DetailsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const data = fakeData.results.find(
-    (value) => value.id.toString() === params.id.toString(),
-  );
+  const [model, setModel] = useState<Classroom | null>(null);
+
+
+  const loadData = useCallback(async () => {
+    const response = await getClassroomById(params.id);
+    console.log(response);
+
+    if (response.status) {
+      setModel(response.data!);
+
+    } else {
+
+      setModel(null);
+    }
+  }, []); // ✅ Dependencies are properly managed
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]); // ✅ No more infinite re-renders
+
+
+
   return (
     <div>
-      <p>IndividualStudentPage</p>
-      {!data && <p>Error: Result doesn&apos;t exist with ID: {params.id}</p>}
-      {!!data && (
+      <p>Info</p>
+      {!model && <p>Error: nothing founded with ID: {params.id}</p>}
+      {!!model && (
         <div>
-          <p>{data.id}</p>
-          <p>
-            {data.year.toString()}--semester {data.semester}
-          </p>
-          <p>{data.id}</p>
-          <p>student:{data.student.firstName}</p>
-          <p>professor:{data.enrollment.professor.firstName}</p>
-          <p>subject:{data.enrollment.subject.name}</p>
-          <p>class:{data.enrollment.classModel.class_name}</p>
-          <p>{data.note_ds}</p>
-          <p>{data.note_tp}</p>
-          <p>{data.note_ex}</p>
-          <p>{data.result_status}</p>
+          <p>{model.name}</p>
+          <p>{model.capacity}</p>
+
+          <p>{model.createdAt.toLocaleString()}</p>
+          <p>{model.updatedAt.toLocaleString()}</p>
+
         </div>
       )}
     </div>

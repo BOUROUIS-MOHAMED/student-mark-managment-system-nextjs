@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { type Student } from "@prisma/client";
+
 import {
   Copy,
   ExternalLink,
@@ -21,11 +21,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Modal from "@/components/ui/modal";
+import {Pfe} from "@/app/dashboard/Models/Pfe";
 
-import DeleteStudent from "@/components/dashboard/students/form-student-delete";
-import EditStudentForm from "@/components/dashboard/students/form-student-edit";
 
-export default function ContextActionMenu({ project }: { project: Student }) {
+
+
+export default function ContextActionMenu({ pfe }: { pfe: Pfe }) {
   // State - to manage the open/close state of the modals and dropdown
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -48,7 +49,7 @@ export default function ContextActionMenu({ project }: { project: Student }) {
           className="cursor-pointer"
           onClick={() =>
             // Copies the attendance record ID to the clipboard
-            navigator.clipboard.writeText(project.studentId)
+            navigator.clipboard.writeText(pfe.id.toString())
           }
         >
           <Copy className="mr-2 h-4 w-4" />
@@ -79,8 +80,8 @@ export default function ContextActionMenu({ project }: { project: Student }) {
                 Edit the details of this attendance record.
               </Modal.Description>
             </Modal.Header>
-            <EditStudentForm
-              student={project}
+            <EditClassroomForm
+              classroom={pfe}
               closeModalAndDropdown={() => {
                 setOpenEditModal(false);
                 setOpenDropdown(false);
@@ -109,8 +110,8 @@ export default function ContextActionMenu({ project }: { project: Student }) {
               </Modal.Description>
             </Modal.Header>
             <Modal.Footer>
-              <DeleteStudent
-                student={project}
+              <DeleteClassroom
+                classroom={pfe}
                 closeModalAndDropdown={() => {
                   setOpenDeleteModal(false);
                   setOpenDropdown(false);

@@ -3,10 +3,11 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header";
-
 import ContextActionMenu from "@/components/dashboard/schoolClass/context-action-menu";
+import {Classroom} from "@/app/dashboard/Models/Classroom";
 
-export const columns: ColumnDef<ClassModel>[] = [
+
+export const columns: ColumnDef<Classroom>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -37,35 +38,29 @@ export const columns: ColumnDef<ClassModel>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "class_name", // Mapping to 'cin' as a unique ID for the student
+    accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="name" />
-    ),
-  },
-  {
-    accessorKey: "class_level", // 'username' for the first name representation
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="level" />
-    ),
-  },
-  {
-    accessorKey: "department", // 'email' for the last name representation (if applicable)
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="department" />
+      <DataTableColumnHeader column={column} title="Name" />
     ),
   },
 
+  {
+    accessorKey: "capacity",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Capacity" />
+    ),
+  },
   {
     accessorKey: "actions",
     header: "Actions",
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      const student = row.original;
+      const model = row.original;
 
       return (
         <div className="flex flex-row gap-1">
-          <ContextActionMenu student={student} />
+          <ContextActionMenu classroom={model} />
         </div>
       );
     },

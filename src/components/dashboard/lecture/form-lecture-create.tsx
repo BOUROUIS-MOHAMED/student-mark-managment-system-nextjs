@@ -22,14 +22,14 @@ import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
 
 import { api } from "@/lib/api";
-import { SubjectSchema, ClassSchema } from "@/app/dashboard/Models/schema";
+import { CourseSchema, ClassroomSchema } from "@/app/dashboard/Models/schema";
 
 // Class and Subject schema data (could be replaced with actual data/API calls)
 const fakeClasses = ["Class 1", "Class 2", "Class 3"];
 
 // Schema for form validation (using Zod)
 export default function AddSubjectForm() {
-  const SubjectCreateSchema = SubjectSchema; // Schema for the subject form
+  const SubjectCreateSchema = CourseSchema; // Schema for the subject form
   const [dialogIsOpen, setDialogIsOpen] = useState(false);
   const [isBeingAdded, setIsBeingAdded] = useState(false);
   const router = useRouter();

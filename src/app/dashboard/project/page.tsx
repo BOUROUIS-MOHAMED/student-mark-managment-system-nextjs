@@ -1,35 +1,42 @@
+"use client"
 import { Separator } from "@/components/ui/separator";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import fakeData from "@/app/dashboard/fake-data/fakeData";
 
-export default async function Records() {
+import {useCallback, useEffect, useState} from "react";
+import {Pfe} from "@/app/dashboard/Models/Pfe";
+import {getAllPfes} from "@/app/dashboard/services/PfeService";
+
+export default  function Records() {
   // Fetch students info from database
-  const data = fakeData.projects.map((project) => ({
-    id: project.id,
-    code: project.code,
-    name: project.name,
-    student_one: project.student_one?.firstName, // Assuming the students are in an array
-    student_two: project.student_two?.lastName, // Adjust accordingly
-    encadrant: project.encadrant.firstName, // Supervisor
-    rapporteur: project.rapporteur.firstName, // Rapporteur
-    president_jury: project.president_jury.firstName, // Jury president
-    datePresentation: project.datePresentation,
-    type: project.type,
-    mark: project.mark,
-    note: project.note,
-    result: project.result,
-    presentation_link: project.presentation_link,
-    rapport_link: project.rapport_link,
-    project_link: project.project_link,
-  }));
-  return (
+
+    const [pfes, setPfes] = useState<Pfe[]>([]);
+
+
+    const loadData = useCallback(async () => {
+        const response = await getAllPfes();
+        console.log(response);
+
+        if (response.status) {
+            setPfes(response.data!);
+
+        } else {
+
+            setPfes([]);
+        }
+    }, []); // ✅ Dependencies are properly managed
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]); // ✅ No more infinite re-renders
+
+
+    return (
     <div className="flex flex-col justify-center">
       <div>
-        {/* Title - Title and description on the page */}
-        <h1 className="text-foreground text-2xl font-bold">Projects</h1>
+        <h1 className="text-foreground text-2xl font-bold">PFE</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your student projects here.
+          Manage your Pfe data here.
         </p>
         <Separator className="mb-1 mt-4" />
       </div>
@@ -37,7 +44,7 @@ export default async function Records() {
       {/* Card - Contains table and button to add new students */}
       <div>
         {/* Table - To display Attendance Records */}
-        <DataTable columns={columns} data={data} />
+        <DataTable columns={columns} data={pfes} />
       </div>
     </div>
   );

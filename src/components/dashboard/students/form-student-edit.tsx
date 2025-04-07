@@ -1,10 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type Student } from "@prisma/client";
+
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { api } from "@/app/trpc/react";
+
 
 import {
   Form,
@@ -19,22 +19,18 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import {Student} from "@/app/dashboard/Models/Student";
+import {updateStudent} from "@/app/dashboard/services/StudentService";
 
 const formSchema = z.object({
-  studentId: z
+  email: z
     .string()
-    .max(10, "Must be 10 characters or less")
-    .regex(/^[0-9]+$/, "Must be a number")
     .optional(),
-  studentCardId: z
+  name: z
     .string()
-    .toUpperCase()
-    .max(50, "Must be 50 characters or less")
     .optional(),
+  phone: z.string().optional(),
 
-  firstName: z.string().max(50, "Must be 50 characters or less").optional(),
-
-  lastName: z.string().max(50, "Must be 50 characters or less").optional(),
 });
 
 export default function EditStudentForm({
@@ -44,56 +40,38 @@ export default function EditStudentForm({
   student: Student;
   closeModalAndDropdown: () => void;
 }) {
-  // Get current user's role from database
-  const { data: userRole } = api.user.getUserRole.useQuery();
 
-  // To refresh the page after a mutation
   const router = useRouter();
 
   // To display toast messages
   const { toast } = useToast();
 
-  // Mutation function to update attendance records (using TRPC)
-  const { mutate: updateStudent } = api.student.updateStudent.useMutation();
 
   // Function to update attendance records if user is authorized
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Check if user is allowed to update attendance records
-    if (userRole !== "ADMIN" && userRole !== "SUPERADMIN") {
-      closeModalAndDropdown();
-      toast({
-        title: "❌ Not allowed",
-        description: "Only admins can edit attendance records",
-      });
-      return;
-    }
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+      // Check if user is allowed to update attendance records
 
-    // Update the record if user is authorized
-    updateStudent(
-      {
-        currentStudentId: student.studentId, // This is the ID of the record to be updated
-        updatedStudentId: values.studentId, // This is the new ID, if provided
-        studentCardId: values.studentCardId,
-        firstName: values.firstName,
-        lastName: values.lastName,
-      },
-      {
-        onSuccess() {
+
+
+
+      // Update the record if user is authorized
+      const response = await updateStudent(student);
+
+      if (response.status) {
           router.refresh();
           closeModalAndDropdown();
           toast({
-            title: "✅ Successfully updated",
-            description: "Student record has been updated",
+              title: "Updated",
+              description: "element updated successfully",
           });
-        },
-        onError(error) {
+      } else {
+
+          closeModalAndDropdown();
           toast({
-            title: "❌ Error",
-            description: error.message,
+              title: "Error",
+              description: "cant update student",
           });
-        },
-      },
-    );
+      }
   }
 
   // Form definition using react-hook-form
@@ -109,14 +87,14 @@ export default function EditStudentForm({
           {/* Input field - for first name */}
           <FormField
             control={form.control}
-            name="firstName"
+            name="name"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>First Name</FormLabel>
+                <FormLabel>Name</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="First Name"
-                    defaultValue={student.firstName}
+                    placeholder="Name"
+                    defaultValue={student.name}
                     {...field}
                   />
                 </FormControl>
@@ -125,36 +103,19 @@ export default function EditStudentForm({
             )}
           />
 
-          {/* Input field - for last name */}
-          <FormField
-            control={form.control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Last Name</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Last Name"
-                    defaultValue={student.lastName}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
 
           {/* Input field - for student ID */}
           <FormField
             control={form.control}
-            name="studentId"
+            name="phone"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Student ID</FormLabel>
+                <FormLabel>Phone</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Student ID"
-                    defaultValue={student.studentId}
+                    placeholder="Phone"
+                    defaultValue={student.phone}
                     {...field}
                   />
                 </FormControl>
@@ -163,24 +124,7 @@ export default function EditStudentForm({
             )}
           />
 
-          {/* Input field - for student card ID */}
-          <FormField
-            control={form.control}
-            name="studentCardId"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Student Card ID</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Student Card ID"
-                    defaultValue={student.studentCardId}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
 
           {/* Submit button - uses state for loading spinner */}
           <Button type="submit">

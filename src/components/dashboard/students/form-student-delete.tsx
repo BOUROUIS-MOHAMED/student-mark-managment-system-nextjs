@@ -1,11 +1,14 @@
 "use client";
 
-import { type Student } from "@prisma/client";
+
 import { useRouter } from "next/navigation";
-import { api } from "@/app/trpc/react";
+
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import {Student} from "@/app/dashboard/Models/Student";
+import {deleteStudent} from "@/app/dashboard/services/StudentService";
+import ResponseModel from "@/app/dashboard/Models/ResponseModel";
 
 export default function DeleteStudent({
   student,
@@ -14,51 +17,34 @@ export default function DeleteStudent({
   student: Student;
   closeModalAndDropdown: () => void;
 }) {
-  // Get current user's role
-  const { data: userRole } = api.user.getUserRole.useQuery();
+
 
   // To refresh the page after a mutation
   const router = useRouter();
 
-  // To delete a record by ID (using TRPC)
-  const { mutate } = api.student.deleteStudentById.useMutation();
+
 
   return (
     <Button
       variant={"destructive"}
-      onClick={() => {
-        // Check if user is allowed to delete attendance records
-        if (userRole !== "ADMIN" && userRole !== "SUPERADMIN") {
+      onClick={async () => {
+        const response: ResponseModel<string> = await deleteStudent(student.id.toString());
+        if (response.status) {
+          router.refresh();
           closeModalAndDropdown();
           toast({
-            title: "❌ Not allowed",
-            description: "Only admins can delete attendance records",
+            title: "🗑️ Deleted",
+            description: "Attendance record deleted successfully",
           });
-          return;
+        } else {
+
+          closeModalAndDropdown();
+          toast({
+            title: "Error",
+            description: response.errorMsg,
+          });
         }
 
-        // Delete the record if user is authorized
-        mutate(
-          {
-            studentId: student.studentId,
-          },
-          {
-            onSuccess: () => {
-              router.refresh();
-              closeModalAndDropdown();
-              toast({
-                title: "🗑️ Deleted",
-                description: "Attendance record deleted successfully",
-              });
-            },
-            onError(error) {
-              toast({
-                title: "❌ Error",
-                description: error.message,
-              });
-            },
-          },
-        );
       }}
     >
       Delete

@@ -1,37 +1,51 @@
+"use client"
 import { Separator } from "@/components/ui/separator";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import fakeData from "@/app/dashboard/fake-data/fakeData";
 
-export default async function Records() {
-  // Map fake data to match the structure expected by the columns
-  const data = fakeData.results.map((result: any) => ({
-    id: result.studentId, // Adjust based on the actual field names in fakeData
-    student: result.student.firstName,
-    professor: result.enrollment.professor.firstName,
-    subject: result.enrollment.subject.name,
-    classModel: result.enrollment.classModel.class_name,
-    note_ds: result.note_ds,
-    note_tp: result.note_tp,
-    note_ex: result.note_ex,
-    year: result.year,
-    semester: result.semester,
-    result_status: result.result_status,
-  }));
+import {useCallback, useEffect, useState} from "react";
+import {Note} from "@/app/dashboard/Models/Note";
+import {getAllNotes} from "@/app/dashboard/services/NoteService";
 
-  return (
+
+export default  function Records() {
+  // Fetch students info from database
+
+    const [notes, setNotes] = useState<Note[]>([]);
+
+
+    const loadData = useCallback(async () => {
+        const response = await getAllNotes();
+        console.log(response);
+
+        if (response.status) {
+            setNotes(response.data!);
+
+        } else {
+
+            setNotes([]);
+        }
+    }, []); // ✅ Dependencies are properly managed
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]); // ✅ No more infinite re-renders
+
+
+    return (
     <div className="flex flex-col justify-center">
       <div>
-        <h1 className="text-foreground text-2xl font-bold">Results</h1>
+        <h1 className="text-foreground text-2xl font-bold">Classroom</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your student results here.
+          Manage your students notes data here.
         </p>
         <Separator className="mb-1 mt-4" />
       </div>
 
+      {/* Card - Contains table and button to add new students */}
       <div>
-        {/* Render DataTable with the mapped data */}
-        <DataTable columns={columns} data={data} />
+        {/* Table - To display Attendance Records */}
+        <DataTable columns={columns} data={notes} />
       </div>
     </div>
   );

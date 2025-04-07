@@ -22,9 +22,9 @@ import { toast } from "@/components/ui/use-toast";
 
 import { api } from "@/lib/api";
 import {
-  ProfessorSchema,
-  ClassSchema,
-  SubjectSchema,
+  TeacherSchema,
+  ClassroomSchema,
+  CourseSchema,
   EnrollmentSchema,
 } from "@/app/dashboard/Models/schema";
 import fakeData from "@/app/dashboard/fake-data/fakeData";

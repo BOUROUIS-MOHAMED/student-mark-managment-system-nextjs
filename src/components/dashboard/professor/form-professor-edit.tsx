@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { api } from "@/app/trpc/react";
 
 import {
   Form,
@@ -19,33 +18,23 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import {Teacher} from "@/app/dashboard/Models/Teacher";
+import {updateTeacher} from "@/app/dashboard/services/TeacherService";
 
 const formSchema = z.object({
-  studentId: z
-    .string()
-    .max(10, "Must be 10 characters or less")
-    .regex(/^[0-9]+$/, "Must be a number")
-    .optional(),
-  studentCardId: z
-    .string()
-    .toUpperCase()
-    .max(50, "Must be 50 characters or less")
-    .optional(),
+    phone: z.string().regex(/^\+212[5-7]\d{8}$/),
+    name: z.string().min(2).max(50),
 
-  firstName: z.string().max(50, "Must be 50 characters or less").optional(),
-
-  lastName: z.string().max(50, "Must be 50 characters or less").optional(),
 });
 
-export default function EditStudentForm({
-  student,
+export default function EditTeacherForm({
+  teacher,
   closeModalAndDropdown,
 }: {
-  student: Student;
+  teacher: Teacher;
   closeModalAndDropdown: () => void;
 }) {
-  // Get current user's role from database
-  const { data: userRole } = api.user.getUserRole.useQuery();
+
 
   // To refresh the page after a mutation
   const router = useRouter();
@@ -53,48 +42,33 @@ export default function EditStudentForm({
   // To display toast messages
   const { toast } = useToast();
 
-  // Mutation function to update attendance records (using TRPC)
-  const { mutate: updateStudent } = api.student.updateStudent.useMutation();
 
   // Function to update attendance records if user is authorized
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Check if user is allowed to update attendance records
-    if (userRole !== "ADMIN" && userRole !== "SUPERADMIN") {
-      closeModalAndDropdown();
-      toast({
-        title: "❌ Not allowed",
-        description: "Only admins can edit attendance records",
-      });
-      return;
-    }
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        // Check if user is allowed to update attendance records
 
-    // Update the record if user is authorized
-    updateStudent(
-      {
-        currentStudentId: student.studentId, // This is the ID of the record to be updated
-        updatedStudentId: values.studentId, // This is the new ID, if provided
-        studentCardId: values.studentCardId,
-        firstName: values.firstName,
-        lastName: values.lastName,
-      },
-      {
-        onSuccess() {
-          router.refresh();
-          closeModalAndDropdown();
-          toast({
-            title: "✅ Successfully updated",
-            description: "Student record has been updated",
-          });
-        },
-        onError(error) {
-          toast({
-            title: "❌ Error",
-            description: error.message,
-          });
-        },
-      },
-    );
-  }
+
+
+
+        // Update the record if user is authorized
+        const response = await updateTeacher(teacher);
+
+        if (response.status) {
+            router.refresh();
+            closeModalAndDropdown();
+            toast({
+                title: "Updated",
+                description: "element updated successfully",
+            });
+        } else {
+
+            closeModalAndDropdown();
+            toast({
+                title: "Error",
+                description: "cant update student",
+            });
+        }
+    }
 
   // Form definition using react-hook-form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -109,14 +83,14 @@ export default function EditStudentForm({
           {/* Input field - for first name */}
           <FormField
             control={form.control}
-            name="firstName"
+            name="name"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>First Name</FormLabel>
+                <FormLabel> Name</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="First Name"
-                    defaultValue={student.firstName}
+                    placeholder=" Name"
+                    defaultValue={teacher.name}
                     {...field}
                   />
                 </FormControl>
@@ -128,14 +102,14 @@ export default function EditStudentForm({
           {/* Input field - for last name */}
           <FormField
             control={form.control}
-            name="lastName"
+            name="phone"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Last Name</FormLabel>
+                <FormLabel>Phone</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Last Name"
-                    defaultValue={student.lastName}
+                    placeholder="Phone"
+                    defaultValue={teacher.phone}
                     {...field}
                   />
                 </FormControl>
@@ -144,43 +118,7 @@ export default function EditStudentForm({
             )}
           />
 
-          {/* Input field - for student ID */}
-          <FormField
-            control={form.control}
-            name="studentId"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Student ID</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Student ID"
-                    defaultValue={student.studentId}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          {/* Input field - for student card ID */}
-          <FormField
-            control={form.control}
-            name="studentCardId"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Student Card ID</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Student Card ID"
-                    defaultValue={student.studentCardId}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           {/* Submit button - uses state for loading spinner */}
           <Button type="submit">
