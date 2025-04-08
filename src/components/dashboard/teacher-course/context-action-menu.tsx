@@ -1,14 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 
 import {
   Copy,
-  ExternalLink,
+
   MoreHorizontal,
-  Pencil,
+
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Modal from "@/components/ui/modal";
 import {TeacherCourse} from "@/app/dashboard/Models/TeacherCourse";
-import EditTeacherCourseForm from "@/components/dashboard/teacher-course/form-teacher-course-edit";
 import DeleteTeacherCourse from "@/components/dashboard/teacher-course/form-teacher-course-delete";
 
 
@@ -31,7 +29,6 @@ import DeleteTeacherCourse from "@/components/dashboard/teacher-course/form-teac
 
 export default function ContextActionMenu({ teacherCourse }: { teacherCourse: TeacherCourse }) {
   // State - to manage the open/close state of the modals and dropdown
-  const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
 
@@ -59,39 +56,9 @@ export default function ContextActionMenu({ teacherCourse }: { teacherCourse: Te
           Copy ID
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="#" className="flex cursor-not-allowed">
-            <ExternalLink className="mr-2 h-4 w-4" />
-            View info
-          </Link>
-        </DropdownMenuItem>
 
-        {/* Modal - to edit records */}
-        <Modal open={openEditModal} onOpenChange={setOpenEditModal}>
-          <Modal.Trigger asChild>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onSelect={(e) => e.preventDefault()}
-            >
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-          </Modal.Trigger>
-          <Modal.Content title="Edit record">
-            <Modal.Header>
-              <Modal.Description>
-                Edit the details of this attendance record.
-              </Modal.Description>
-            </Modal.Header>
-            <EditTeacherCourseForm
-              teacherCourse={teacherCourse}
-              closeModalAndDropdown={() => {
-                setOpenEditModal(false);
-                setOpenDropdown(false);
-              }}
-            />
-          </Modal.Content>
-        </Modal>
+
+
 
         <DropdownMenuSeparator />
 

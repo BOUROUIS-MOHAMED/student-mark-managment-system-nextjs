@@ -27,6 +27,7 @@ import { DataTableViewOptions } from "@/components/ui/data-table/view-options";
 import { Input } from "@/components/ui/input";
 import DeleteSelectedClassroom from "@/components/dashboard/schoolClass/delete-selected-records";
 import AddClassroomForm from "@/components/dashboard/schoolClass/form-classroom-create";
+import AddTeacherClassroomForm from "@/components/dashboard/teacher-classroom/form-teacher-classroom-create";
 
 
 interface DataTableProps<TData, TValue> {
@@ -88,7 +89,7 @@ export function DataTable<TData, TValue>({
           <DeleteSelectedClassroom table={table} />
 
           {/* Create New Records (Modal + Form) - used to create new Attendance Records */}
-          <AddClassroomForm />
+          <AddTeacherClassroomForm />
         </div>
       </div>
       <div className="rounded-md border">

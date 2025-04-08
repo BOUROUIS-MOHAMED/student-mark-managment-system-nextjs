@@ -1,6 +1,6 @@
 import { type Table } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { toast as displayToast } from "@/components/ui/use-toast";
 
@@ -13,8 +13,7 @@ export default function DeleteSelectedCourse<TData>({
 }: DataTableViewOptionsProps<TData>) {
   // Get current user's role
 
-  // To refresh the page after a mutation
-  const { refresh: refreshPageData } = useRouter();
+
 
   return (
     <>

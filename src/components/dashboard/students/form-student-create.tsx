@@ -2,8 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -21,10 +20,24 @@ import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
 
 
-import { StudentSchema } from "@/app/dashboard/Models/schema";
+
+import {Classroom} from "@/app/dashboard/Models/Classroom";
+import {getAllClassrooms} from "@/app/dashboard/services/ClassroomService";
+import {User} from "@/app/dashboard/Models/User";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {createStudent} from "@/app/dashboard/services/StudentService";
 
 // Schema for form validation (using Zod)
-const FormSchema = StudentSchema;
+const FormSchema = z.object({
+    password: z.string(),
+    email: z.string().email(),
+    username: z.string(),
+    id: z.string().optional(),
+    classroomId: z.number(),
+    name: z.string(),
+    phone: z.string(),
+
+});
 
 export default function AddStudentForm() {
   // State - used to close dialog after a student is added
@@ -32,35 +45,107 @@ export default function AddStudentForm() {
 
   // State - used for button loading spinners during student creation
   const [isBeingAdded, setIsBeingAdded] = useState(false);
+    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+
+    const [loadingData, setLoadingData] = useState(true);
 
 
 
-  // Form hook - used for form validation and submission logic (using react-hook-form)
+    // Fetch students and courses when the modal opens
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const classroomData = await getAllClassrooms();
+                setClassrooms(classroomData.data);
+            } catch (error) {
+                toast({
+                    variant: "destructive",
+                    title: "Loading Error",
+                    description: "Failed to load students or courses",
+                });
+            } finally {
+                setLoadingData(false);
+            }
+        };
+
+        if (dialogIsOpen) fetchData();
+    }, [dialogIsOpen]);
+
+
+    // Form hook - used for form validation and submission logic (using react-hook-form)
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
 
   // Form submission function - called when the form is submitted (using react-hook-form)
-  function onSubmit(formData: z.infer<typeof FormSchema>) {
-    setIsBeingAdded(true);
-    // Assuming false condition is to prevent non-admins from adding students
-    if (false) {
-      toast({
-        title: "❌ Not allowed",
-        description: "Only admins can add new student",
-      });
-      setIsBeingAdded(false);
-      setDialogIsOpen(false);
-      return;
-    }
+    async function onSubmit(formData: z.infer<typeof FormSchema>) {
 
-    // Logic for adding the student (you would probably want to send formData to your API here)
-    toast({
-      title: "Student Added",
-      description: `Student with ID ${formData.id} has been added successfully!`,
-    });
-    setIsBeingAdded(false);
-    setDialogIsOpen(false);
+        setIsBeingAdded(true);
+        try {
+            // Create user without ID
+            const user = new User({
+                id:null,
+                password: formData.password,
+                email: formData.email, // Fixed from password to email
+                accessToken: "",
+                roles: [],
+                tokenType: "Bearer",
+                username: formData.username,
+            });
+
+// Send only classroom ID reference
+            const classroomReference = formData.classroomId ? { id: formData.classroomId } : null;
+
+// Create student data without IDs
+            const data = {
+                email: formData.email,
+                classroom: classroomReference,
+                phone: formData.phone,
+                user: {
+                    ...user.toJson(),
+                    // Remove all ID-related fields
+                    id: undefined,
+                    uuid: undefined,
+                    createdAt: undefined,
+                    updatedAt: undefined,
+                },
+                name: formData.name,
+                // Omit these fields completely
+                id: undefined,
+                uuid: undefined,
+                createdAt: undefined,
+                updatedAt: undefined,
+            };
+            console.log("student", data);
+
+            const response = await createStudent(data);
+            console.log('API Response:', response); // Add logging
+
+            // Handle different response structures
+            if (response.status) {
+                toast({
+                    title: "Success",
+                    description: `Classroom ${formData.name} created successfully!`,
+                });
+                form.reset();
+                setDialogIsOpen(false);
+                setIsBeingAdded(false);
+            } else {
+
+                throw new Error(response.errorMsg || "Failed to create classroom");
+            }
+        } catch (error) {
+            console.error('Submission Error:', error);
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: error instanceof Error ? error.message : "Unknown error",
+            });
+        } finally {
+            setIsBeingAdded(false);
+        }
+
+
   }
 
   return (
@@ -81,6 +166,36 @@ export default function AddStudentForm() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
               >
+                  {/* Student Select */}
+                  <FormField
+                      control={form.control}
+                      name="classroomId"
+                      render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Classroom</FormLabel>
+                              <Select
+                                  onValueChange={(value) => field.onChange(Number(value))} // Convert to number
+                                  value={field.value?.toString()}
+                                  disabled={loadingData}
+                              >
+                                  <FormControl>
+                                      <SelectTrigger>
+                                          <SelectValue placeholder="Select a classroom" />
+                                      </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {classrooms.map((student) => (
+                                          <SelectItem key={student.id} value={student.id.toString()}>
+                                              {student.name}
+                                          </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                      )}
+                  />
+
                 {/* Input field - for username */}
                 <FormField
                   control={form.control}
@@ -90,6 +205,20 @@ export default function AddStudentForm() {
                       <FormLabel>Username</FormLabel>
                       <FormControl>
                         <Input placeholder="Username" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                  {/* Input field - for name */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -111,20 +240,7 @@ export default function AddStudentForm() {
                   )}
                 />
 
-                {/* Input field - for CIN (student national ID) */}
-                <FormField
-                  control={form.control}
-                  name="cin"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>CIN</FormLabel>
-                      <FormControl>
-                        <Input placeholder="CIN" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
 
                 {/* Input field - for password */}
                 <FormField
@@ -145,37 +261,8 @@ export default function AddStudentForm() {
                   )}
                 />
 
-                {/* Dropdown - for role */}
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Role</FormLabel>
-                      <FormControl>
-                        <select {...field} className="input">
-                          <option value="student">Student</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                {/* Input field - for university email */}
-                <FormField
-                  control={form.control}
-                  name="email_univ"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>University Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="University Email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
 
                 {/* Input field - for phone */}
                 <FormField
@@ -206,6 +293,12 @@ export default function AddStudentForm() {
                     </>
                   )}
                 </Button>
+                  <Button
+                      className="bg-red-700 hover:bg-red-800 min-w-[250px] min-h-[40px]"
+                      onClick={(event) => console.log(form.formState.errors)}
+                  >
+                      DEBUG
+                  </Button>
               </form>
             </Form>
           </div>

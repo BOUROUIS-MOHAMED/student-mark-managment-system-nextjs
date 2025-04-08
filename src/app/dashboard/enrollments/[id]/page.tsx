@@ -1,5 +1,4 @@
 import React from "react";
-import { api } from "@/app/trpc/server";
 
 export default async function IndividualStudentPage({
   params,

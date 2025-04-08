@@ -1,140 +1,199 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
-import { Check } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
-import {CourseSchema, StudentSchema} from "@/app/dashboard/Models/schema";
-import {CourseStudent} from "@/app/dashboard/Models/CourseStudent";
-import {updateCourseStudent} from "@/app/dashboard/services/CourseStudentService";
-
-
-
+import { CourseStudent } from "@/app/dashboard/Models/CourseStudent";
+import { updateCourseStudent } from "@/app/dashboard/services/CourseStudentService";
+import { Student } from "@/app/dashboard/Models/Student";
+import { Course } from "@/app/dashboard/Models/Course";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getAllStudents } from "@/app/dashboard/services/StudentService";
+import { getAllCourses } from "@/app/dashboard/services/CourseService";
+import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
+import { CourseStudentId } from "@/app/dashboard/Models/embededIds/CourseStudentId";
 
 const formSchema = z.object({
-
-    course: CourseSchema,
-    student: StudentSchema,
-
+    studentId: z.number(),
+    courseId: z.number(),
 });
 
 export default function EditCourseStudentForm({
-  courseStudent,
-  closeModalAndDropdown,
-}: {
-  courseStudent: CourseStudent;
-  closeModalAndDropdown: () => void;
+                                                  courseStudent,
+                                                  closeModalAndDropdown,
+                                              }: {
+    courseStudent: CourseStudent;
+    closeModalAndDropdown: () => void;
 }) {
+    const router = useRouter();
+    const { toast } = useToast();
+    const [students, setStudents] = useState<Student[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [loading, setLoading] = useState(true);
 
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            studentId: courseStudent.id.studentId,
+            courseId: courseStudent.id.courseId,
+        },
+    });
 
-  // To refresh the page after a mutation
-  const router = useRouter();
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [studentsData, coursesData] = await Promise.all([
+                    getAllStudents(),
+                    getAllCourses(),
+                ]);
+                setStudents(studentsData.data);
+                setCourses(coursesData.data);
+            } catch (error) {
+                toast({
+                    variant: "destructive",
+                    title: "Loading Error",
+                    description: "Failed to load data",
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
-  // To display toast messages
-  const { toast } = useToast();
-
-
-  // Function to update attendance records if user is authorized
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        // Check if user is allowed to update attendance records
+        try {
+            const selectedStudent = students.find(s => s.id === values.studentId);
+            const selectedCourse = courses.find(c => c.id === values.courseId);
 
+            if (!selectedStudent || !selectedCourse) {
+                throw new Error("Invalid selection");
+            }
 
-
-
-        // Update the record if user is authorized
-        const response = await updateCourseStudent(courseStudent.id.courseId.toString(),courseStudent.id.studentId.toString(),courseStudent);
-
-        if (response.status) {
-            router.refresh();
-            closeModalAndDropdown();
-            toast({
-                title: "Updated",
-                description: "element updated successfully",
+            const updatedCourseStudent = new CourseStudent({
+                id: new CourseStudentId({
+                    studentId: courseStudent.id.studentId,
+                    courseId: courseStudent.id.courseId,
+                }),
+                student: selectedStudent,
+                course: selectedCourse,
             });
-        } else {
 
-            closeModalAndDropdown();
+            const response = await updateCourseStudent(
+                courseStudent.id.courseId.toString(),
+                courseStudent.id.studentId.toString(),
+                updatedCourseStudent
+            );
+            console.log(updatedCourseStudent);
+            console.log("response", response);
+
+            if (response.status) {
+                router.refresh();
+
+                closeModalAndDropdown();
+                toast({
+                    title: "Updated",
+                    description: "Association updated successfully",
+                });
+            } else {
+                console.log("Response", response);
+
+                throw new Error("Update failed");
+            }
+        } catch (error) {
             toast({
+                variant: "destructive",
                 title: "Error",
-                description: "cant update student",
+                description: error instanceof Error ? error.message : "Update failed",
             });
         }
     }
 
-  // Form definition using react-hook-form
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                    control={form.control}
+                    name="studentId"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Student</FormLabel>
+                            <Select
+                                onValueChange={(value) => field.onChange(Number(value))}
+                                value={field.value.toString()}
+                                disabled={loading}
+                            >
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select student" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {students.map((student) => (
+                                        <SelectItem
+                                            key={student.id}
+                                            value={student.id!.toString()}
+                                        >
+                                            {student.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
-  return (
-    <>
-      {/* Form - to edit attendance records */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Input field - for first name */}
-          <FormField
-            control={form.control}
-            name="student"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel> Student</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder=" Student"
-                    defaultValue={courseStudent.student}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                <FormField
+                    control={form.control}
+                    name="courseId"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Course</FormLabel>
+                            <Select
+                                onValueChange={(value) => field.onChange(Number(value))}
+                                value={field.value.toString()}
+                                disabled={loading}
+                            >
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select course" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {courses.map((course) => (
+                                        <SelectItem
+                                            key={course.id}
+                                            value={course.id.toString()}
+                                        >
+                                            {course.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
-          {/* Input field - for last name */}
-          <FormField
-            control={form.control}
-            name="course"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Course</FormLabel>
-                <FormControl>
-                  <Input
+                <Button type="submit">
+                    <Check className="mr-2 h-4 w-4" />
+                    Save changes
+                </Button>
 
-                    placeholder="Course"
-                    defaultValue={courseStudent.course}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-
-
-          {/* Submit button - uses state for loading spinner */}
-          <Button type="submit">
-            <>
-              <Check className="mr-2 h-4 w-4" />
-              <span>Save changes</span>
-            </>
-          </Button>
-        </form>
-      </Form>
-    </>
-  );
+            </form>
+        </Form>
+    );
 }

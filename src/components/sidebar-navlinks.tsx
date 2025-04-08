@@ -47,6 +47,13 @@ const links = [
     newStatus: false,
   },
   {
+    name: "Course Students",
+    href: "/dashboard/course-student",
+    icon: <Presentation size={18} />,
+    wipStatus: false,
+    newStatus: false,
+  },
+  {
     name: "Teachers",
     href: "/dashboard/professors",
     icon: <CheckCircle size={18} />,
@@ -79,12 +86,6 @@ const links = [
   {
     name: "Pfe Teachers",
     href: "/dashboard/pfe-teacher",
-    icon: <BookCheck size={18} />,
-    wipStatus: false,
-  },
-  {
-    name: "Teachers",
-    href: "/dashboard/professors",
     icon: <BookCheck size={18} />,
     wipStatus: false,
   },

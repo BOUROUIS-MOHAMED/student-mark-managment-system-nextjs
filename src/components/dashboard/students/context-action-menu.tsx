@@ -25,12 +25,15 @@ import DeleteStudent from "@/components/dashboard/students/form-student-delete";
 import EditStudentForm from "@/components/dashboard/students/form-student-edit";
 import {Student} from "@/app/dashboard/Models/Student";
 import {downloadStudentNotesPdf} from "@/app/dashboard/services/StudentService";
+import {usePathname} from "next/navigation";
 
 export default function ContextActionMenu({ student }: { student: Student }) {
   // State - to manage the open/close state of the modals and dropdown
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
+  const pathname = usePathname(); // ⬅️ Get current path
+
 
   return (
     <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
@@ -49,7 +52,7 @@ export default function ContextActionMenu({ student }: { student: Student }) {
           className="cursor-pointer"
           onClick={() =>
             // Copies the attendance record ID to the clipboard
-            navigator.clipboard.writeText(student.id.toString())
+            navigator.clipboard.writeText(student.id!.toString())
           }
         >
           <Copy className="mr-2 h-4 w-4" />
@@ -57,7 +60,7 @@ export default function ContextActionMenu({ student }: { student: Student }) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="#" className="flex cursor-not-allowed">
+          <Link href={`${pathname}/${student.id}`} className="flex cursor-pointer">
             <ExternalLink className="mr-2 h-4 w-4" />
             View info
           </Link>

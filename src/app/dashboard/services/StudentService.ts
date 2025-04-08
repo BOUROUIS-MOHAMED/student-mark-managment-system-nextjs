@@ -2,10 +2,36 @@ import {Properties} from "@/app/properties";
 import api from "@/app/dashboard/api/axiosConfig";
 import ResponseModel from "@/app/dashboard/Models/ResponseModel";
 import {Student} from "@/app/dashboard/Models/Student";
+import {Pfe} from "@/app/dashboard/Models/Pfe";
 
 
 const properties = Properties.getInstance();
 const client = api;
+
+export async function getStudentById(id:string): Promise<ResponseModel<Student | null>> {
+    try {
+        const response = await client.get(properties.studentsURL+"/"+id);
+
+        if (response.status === 200) {
+            const data = response.data;
+
+            console.log(data);
+
+            const model = Pfe.fromJson(data);
+
+            const result = new ResponseModel<Student | null>(true, model, undefined, 'Operation completed');
+
+            console.log(result);
+            return result;
+        }
+
+        return new ResponseModel<Student | null>(false, null, response.statusText, response.data);
+    } catch (error) {
+        console.error("Error fetching Pfe:", error);
+        return new ResponseModel<Student | null>(false, null, "An error occurred", undefined);
+    }
+}
+
 
 export async function getAllStudents(): Promise<ResponseModel<Student[]>> {
     try {

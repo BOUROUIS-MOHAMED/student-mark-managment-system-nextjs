@@ -21,6 +21,10 @@ import { toast } from "@/components/ui/use-toast";
 
 
 import {PfeSchema} from "@/app/dashboard/Models/schema";
+import {Pfe} from "@/app/dashboard/Models/Pfe";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Status} from "@/app/dashboard/Models/enumeration/Status";
+import {createPfe} from "@/app/dashboard/services/PfeService";
 
 // Schema for form validation (using Zod)
 const FormSchema = PfeSchema;
@@ -39,16 +43,46 @@ export default function AddPfeForm() {
   });
 
   // Form submission function - called when the form is submitted (using react-hook-form)
-  function onSubmit(formData: z.infer<typeof FormSchema>) {
-    setIsBeingAdded(true);
-    // Logic for adding the professor (you would probably want to send formData to your API here)
-    toast({
-      title: "Professor Added",
-      description: `Professor with ID ${formData.id} has been added successfully!`,
-    });
-    setIsBeingAdded(false);
-    setDialogIsOpen(false);
-  }
+    async function onSubmit(formData: z.infer<typeof FormSchema>) {
+
+        setIsBeingAdded(true);
+        try {
+            const data = new Pfe({
+                name:formData.name,
+                status:formData.status,
+                id: -1,
+                uuid: undefined,
+                createdAt: undefined,
+                updatedAt: undefined,
+            });
+
+            const response = await createPfe(data);
+            console.log('API Response:', response); // Add logging
+
+            // Handle different response structures
+            if (response.status) {
+                toast({
+                    title: "Success",
+                    description: `Pfe ${formData.name} created successfully!`,
+                });
+                form.reset();
+                setDialogIsOpen(false);
+                setIsBeingAdded(false);
+            } else {
+
+                throw new Error(response.errorMsg || "Failed to create classroom");
+            }
+        } catch (error) {
+            console.error('Submission Error:', error);
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: error instanceof Error ? error.message : "Unknown error",
+            });
+        } finally {
+            setIsBeingAdded(false);
+        }
+    }
 
   return (
     <>
@@ -85,19 +119,37 @@ export default function AddPfeForm() {
 
 
                 {/* Input field - for phone */}
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Status</FormLabel>
-                      <FormControl>
-                        <Input  placeholder="Status" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Note Type</FormLabel>
+                              <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+
+                              >
+                                  <FormControl>
+                                      <SelectTrigger>
+                                          <SelectValue placeholder="Select pfe status" />
+                                      </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {Object.values(Status).map((type) => (
+                                          <SelectItem
+                                              key={type}
+                                              value={type}
+                                          >
+                                              {type}
+                                          </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                      )}
+                  />
 
 
 
@@ -115,6 +167,12 @@ export default function AddPfeForm() {
                     </>
                   )}
                 </Button>
+                  <Button
+                      className="bg-red-700 hover:bg-red-800 min-w-[250px] min-h-[40px]"
+                      onClick={(event) => console.log(form.formState.errors)}
+                  >
+                      DEBUG
+                  </Button>
               </form>
             </Form>
           </div>

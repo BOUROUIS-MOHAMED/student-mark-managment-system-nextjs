@@ -14,7 +14,7 @@ export default function DeleteSelectedPfeTeacher<TData>({
   // Get current user's role
 
   // To refresh the page after a mutation
-  const { refresh: refreshPageData } = useRouter();
+
 
   return (
     <>

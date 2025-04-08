@@ -22,6 +22,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Modal from "@/components/ui/modal";
 import {Pfe} from "@/app/dashboard/Models/Pfe";
+import EditPfeForm from "@/components/dashboard/projects/form-pfe-edit";
+import DeletePfe from "@/components/dashboard/projects/form-pfe-delete";
+import {usePathname} from "next/navigation";
 
 
 
@@ -31,7 +34,7 @@ export default function ContextActionMenu({ pfe }: { pfe: Pfe }) {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
-
+  const pathname = usePathname(); // ⬅️ Get current path
   return (
     <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
       {/* Dropdown Menu Trigger Button */}
@@ -57,7 +60,7 @@ export default function ContextActionMenu({ pfe }: { pfe: Pfe }) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="#" className="flex cursor-not-allowed">
+          <Link href={`${pathname}/${pfe.id}`} className="flex cursor-pointer">
             <ExternalLink className="mr-2 h-4 w-4" />
             View info
           </Link>
@@ -80,8 +83,8 @@ export default function ContextActionMenu({ pfe }: { pfe: Pfe }) {
                 Edit the details of this attendance record.
               </Modal.Description>
             </Modal.Header>
-            <EditClassroomForm
-              classroom={pfe}
+            <EditPfeForm
+              pfe={pfe}
               closeModalAndDropdown={() => {
                 setOpenEditModal(false);
                 setOpenDropdown(false);
@@ -110,8 +113,8 @@ export default function ContextActionMenu({ pfe }: { pfe: Pfe }) {
               </Modal.Description>
             </Modal.Header>
             <Modal.Footer>
-              <DeleteClassroom
-                classroom={pfe}
+              <DeletePfe
+                pfe={pfe}
                 closeModalAndDropdown={() => {
                   setOpenDeleteModal(false);
                   setOpenDropdown(false);

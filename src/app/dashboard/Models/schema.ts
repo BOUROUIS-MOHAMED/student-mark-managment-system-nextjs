@@ -1,4 +1,6 @@
 import { z } from "zod";
+import {NoteType} from "@/app/dashboard/Models/enumeration/NoteType";
+import {Status} from "@/app/dashboard/Models/enumeration/Status";
 
 // Base User Schema
 const UserSchema = z.object({
@@ -17,6 +19,7 @@ const UserSchema = z.object({
 
 // Professor Schema (extends User)
 const TeacherSchema = z.object({
+  id: z.number().optional(),
   phone: z.string().regex(/^\+212[5-7]\d{8}$/),
   name: z.string().min(2).max(50),
 
@@ -48,34 +51,34 @@ const CourseStudentIdSchema = z.object({
 
 // Class Schema
 const ClassroomSchema = z.object({
-  id: z.number().positive(),
+  id: z.number().optional(),
   name: z.string().min(2).max(50),
   capacity: z.number().min(0).max(1000),
 });
 
 const TeacherClassroomSchema = z.object({
-  id: TeacherClassroomIdSchema,
-  teacher: TeacherSchema,
-  classroom: ClassroomSchema,
+  teacherId: z.number(),
+  classroomId: z.number(),
 });
 
 
 // Subject Schema
 const CourseSchema = z.object({
-  id: z.number().positive(),
+  id: z.number().optional(),
   name: z.string().min(3).max(100),
   description: z.string().max(500),
 });
 
 const TeacherCourseSchema = z.object({
-  id: TeacherCourseIdSchema,
-  teacher: TeacherSchema,
-  course: CourseSchema,
+  teacherId: z.number().min(1, "Teacher is required"),  // Teacher ID
+  courseId: z.number().min(1, "Course is required"),    // Course ID
 });
 
 // Student Schema (extends User)
 const StudentSchema = UserSchema.extend({
-  email_univ: z.string().email().endsWith("@univ.ac.ma"),
+  email: z.string().email(),
+  classroomId: z.number().optional(),
+  name: z.string().min(3).max(50),
   phone: z.string().regex(/^\+212[5-7]\d{8}$/),
 }).strict();
 
@@ -96,28 +99,30 @@ const EnrollmentSchema = z.object({
 
 // Project Schema
 const PfeSchema = z.object({
-  id: z.number(),
-  name: z.string().min(5).max(100),
-  status: z.string(),
+  id: z.number().optional(),
+  name: z.string().min(1).max(100),
+  status: z.enum([Status.COMPLETED,Status.IN_PROGRESS,Status.NOT_STARTED_YET]),
 });
 const CourseStudentSchema = z.object({
-  id: CourseStudentIdSchema,
-  student: StudentSchema,
-  course: CourseSchema,
+  id: CourseStudentIdSchema.optional(),
+  studentId: z.number(),
+  courseId: z.number(),
 });
 // Result Schema
 const NoteSchema = z.object({
   id: z.number().optional(),
-  student: z.string(),
-  teacher: z.string(),
-  score: z.number().min(0).max(20),
-  type: z.string(),
+  studentId: z.number(),
+  teacherId: z.number(),
+  score: z.coerce.number()
+      .min(0, "Score must be at least 0")
+      .max(20, "Score cannot exceed 20"),
+  type: z.enum([NoteType.DS, NoteType.TP, NoteType.EXAM]),
 });
 
 const PfeTeacherSchema = z.object({
-  id: PfeTeacherIdSchema,
-  teacher: TeacherSchema,
-  pfe:PfeSchema,
+
+  teacherId: z.number(),
+  pfeId:z.number(),
 
 });
 

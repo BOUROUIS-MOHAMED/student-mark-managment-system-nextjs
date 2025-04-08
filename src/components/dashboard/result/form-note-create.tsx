@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -19,11 +19,19 @@ import { Input } from "@/components/ui/input";
 import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
 import {NoteSchema} from "@/app/dashboard/Models/schema";
+import {Teacher} from "@/app/dashboard/Models/Teacher";
+
+import {getAllTeachers} from "@/app/dashboard/services/TeacherService";
+import {Student} from "@/app/dashboard/Models/Student";
+import {getAllStudents} from "@/app/dashboard/services/StudentService";
+import {Note} from "@/app/dashboard/Models/Note";
+import {createNote} from "@/app/dashboard/services/NoteService";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {NoteType} from "@/app/dashboard/Models/enumeration/NoteType";
 
 
 
-// Schema for form validation (using Zod)
-const FormSchema = NoteSchema;
+
 
 export default function AddNoteForm() {
   // State - used to close dialog after a professor is added
@@ -32,23 +40,82 @@ export default function AddNoteForm() {
   // State - used for button loading spinners during professor creation
   const [isBeingAdded, setIsBeingAdded] = useState(false);
 
+    const [teachers, setTeachers] = useState<Teacher[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
+    const [loadingData, setLoadingData] = useState(true);
 
-  // Form hook - used for form validation and submission logic (using react-hook-form)
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-  });
-
-  // Form submission function - called when the form is submitted (using react-hook-form)
-  function onSubmit(formData: z.infer<typeof FormSchema>) {
-    setIsBeingAdded(true);
-    // Logic for adding the professor (you would probably want to send formData to your API here)
-    toast({
-      title: "Note Added",
-      description: `Note with ID ${formData.id} has been added successfully!`,
+    const form = useForm<z.infer<typeof NoteSchema>>({
+        resolver: zodResolver(NoteSchema),
     });
-    setIsBeingAdded(false);
-    setDialogIsOpen(false);
-  }
+
+    // Fetch initial data
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const teachersData = await getAllTeachers();
+                setTeachers(teachersData.data);
+                const studentData = await getAllStudents();
+                setStudents(studentData.data);
+            } catch (error) {
+                toast({
+                    variant: "destructive",
+                    title: "Loading Error",
+                    description: "Failed to load teachers or courses",
+                });
+            } finally {
+                setLoadingData(false);
+            }
+        };
+
+        if (dialogIsOpen) fetchData();
+    }, [dialogIsOpen]);
+
+    const onSubmit = async (formData: z.infer<typeof NoteSchema>) => {
+        setIsBeingAdded(true);
+        try {
+            // Find the selected teacher and course by id
+            const selectedTeacher = teachers.find((teacher) => teacher.id === formData.teacherId);
+            const selectedStudent = students.find((course) => course.id === formData.studentId);
+
+            console.log("selectedCourse", selectedStudent);
+            console.log("selectedTeacher", selectedTeacher);
+            if (!selectedTeacher || !selectedStudent) {
+                throw new Error("Invalid teacher or course selected");
+            }
+
+
+            // Create TeacherCourse model with ids set to -1
+            const note = new Note({
+                id: undefined,
+                teacher: selectedTeacher,
+                student: selectedStudent,
+                type:formData.type,
+                score:formData.score
+            });
+
+
+            const response = await createNote(note);
+
+            if (!response.status) new Error("Failed to create assignment");
+            console.log("Successfully created teacher");
+            toast({
+                title: "Assignment Created",
+                description: "Teacher successfully assigned to course",
+            });
+
+
+            form.reset();
+            setDialogIsOpen(false);
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Assignment Failed",
+                description: error instanceof Error ? error.message : "Unknown error occurred",
+            });
+        } finally {
+            setIsBeingAdded(false);
+        }
+    };
 
   return (
     <>
@@ -69,64 +136,122 @@ export default function AddNoteForm() {
                 className="space-y-6"
               >
                 {/* Input field - for score */}
-                <FormField
-                  control={form.control}
-                  name="score"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Score</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Score" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-
-                {/* Input field - for type */}
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Type</FormLabel>
-                      <FormControl>
-                        <Input  placeholder="Type" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                      control={form.control}
+                      name="score"
+                      render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                              <FormLabel>Score</FormLabel>
+                              <FormControl>
+                                  <Input
+                                      placeholder="Score"
+                                      type="number"
+                                      step="0.01"
+                                      {...field}
+                                  />
+                              </FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )}
+                  />
 
 
                   <FormField
-                  control={form.control}
-                  name="student"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Student</FormLabel>
-                      <FormControl>
-                        <Input  placeholder="Student" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Note Type</FormLabel>
+                              <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  disabled={loadingData}
+                              >
+                                  <FormControl>
+                                      <SelectTrigger>
+                                          <SelectValue placeholder="Select note type" />
+                                      </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {Object.values(NoteType).map((type) => (
+                                          <SelectItem
+                                              key={type}
+                                              value={type}
+                                          >
+                                              {type}
+                                          </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                      )}
+                  />
+
 
                   <FormField
-                  control={form.control}
-                  name="teacher"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Teacher</FormLabel>
-                      <FormControl>
-                        <Input  placeholder="Teacher" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      control={form.control}
+                      name="teacherId"
+                      render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Teacher</FormLabel>
+                              <Select
+                                  onValueChange={(value) => field.onChange(Number(value))} // Convert to number
+                                  value={field.value?.toString()}
+                                  disabled={loadingData}
+                              >
+                                  <FormControl>
+                                      <SelectTrigger>
+                                          <SelectValue placeholder="Select a teacher" />
+                                      </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {teachers.map((teacher) => (
+                                          <SelectItem
+                                              key={teacher.id}
+                                              value={teacher.id.toString()}
+                                          >
+                                              {teacher.name}
+                                          </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                      )}
+                  />
+
+                  <FormField
+                      control={form.control}
+                      name="studentId"
+                      render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Student</FormLabel>
+                              <Select
+                                  onValueChange={(value) => field.onChange(Number(value))} // Convert to number
+                                  value={field.value?.toString()}
+                                  disabled={loadingData}
+                              >
+                                  <FormControl>
+                                      <SelectTrigger>
+                                          <SelectValue placeholder="Select a course" />
+                                      </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {students.map((student) => (
+                                          <SelectItem
+                                              key={student.id}
+                                              value={student.id!.toString()}
+                                          >
+                                              {student.name}
+                                          </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                      )}
+                  />
 
 
 
@@ -144,6 +269,12 @@ export default function AddNoteForm() {
                     </>
                   )}
                 </Button>
+                  <Button
+                      className="bg-red-700 hover:bg-red-800 min-w-[250px] min-h-[40px]"
+                      onClick={(event) => console.log(form.formState.errors)}
+                  >
+                      DEBUG
+                  </Button>
               </form>
             </Form>
           </div>

@@ -25,21 +25,19 @@ import {
 import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
 import { TeacherCourseSchema } from "@/app/dashboard/Models/schema";
-import {Teacher} from "@/app/dashboard/Models/Teacher";
-import {Course} from "@/app/dashboard/Models/Course";
-
+import { Teacher } from "@/app/dashboard/Models/Teacher";
+import { Course } from "@/app/dashboard/Models/Course";
+import { getAllTeachers } from "@/app/dashboard/services/TeacherService";
+import { getAllCourses } from "@/app/dashboard/services/CourseService";
+import { TeacherCourse } from "@/app/dashboard/Models/TeacherCourse";
+import { TeacherCourseId } from "@/app/dashboard/Models/embededIds/TeacherCourseId";
+import {createTeacherCourse} from "@/app/dashboard/services/TeacherCourseService";
 
 interface Props {
-    getAllTeachers: () => Promise<Teacher[]>;
-    getAllCourses: () => Promise<Course[]>;
-    createTeacherCourse: (data: z.infer<typeof TeacherCourseSchema>) => Promise<Response>;
+    createTeacherCourse: (data: TeacherCourse) => Promise<Response>;
 }
 
-export default function AddTeacherCourseForm({
-                                                 getAllTeachers,
-                                                 getAllCourses,
-                                                 createTeacherCourse
-                                             }: Props) {
+export default function AddTeacherCourseForm({  }: Props) {
     const [dialogIsOpen, setDialogIsOpen] = useState(false);
     const [isBeingAdded, setIsBeingAdded] = useState(false);
     const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -54,12 +52,10 @@ export default function AddTeacherCourseForm({
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [teachersData, coursesData] = await Promise.all([
-                    getAllTeachers(),
-                    getAllCourses()
-                ]);
-                setTeachers(teachersData);
-                setCourses(coursesData);
+                const teachersData = await getAllTeachers();
+                setTeachers(teachersData.data);
+                const coursesData = await getAllCourses();
+                setCourses(coursesData.data);
             } catch (error) {
                 toast({
                     variant: "destructive",
@@ -77,14 +73,34 @@ export default function AddTeacherCourseForm({
     const onSubmit = async (formData: z.infer<typeof TeacherCourseSchema>) => {
         setIsBeingAdded(true);
         try {
-            const response = await createTeacherCourse(formData);
+            // Find the selected teacher and course by id
+            const selectedTeacher = teachers.find((teacher) => teacher.id === formData.teacherId);
+            const selectedCourse = courses.find((course) => course.id === formData.courseId);
 
-            if (!response.ok) throw new Error('Failed to create assignment');
+            console.log("selectedCourse", selectedCourse);
+            console.log("selectedTeacher", selectedTeacher);
+            if (!selectedTeacher || !selectedCourse) {
+                throw new Error("Invalid teacher or course selected");
+            }
 
+
+            // Create TeacherCourse model with ids set to -1
+            const teacherCourse = new TeacherCourse({
+                id: new TeacherCourseId({ teacherId: -1, courseId: -1 }),
+                teacher: selectedTeacher,
+                course: selectedCourse,
+            });
+
+
+            const response = await createTeacherCourse(teacherCourse);
+
+            if (!response.status) new Error("Failed to create assignment");
+            console.log("Successfully created teacher");
             toast({
                 title: "Assignment Created",
                 description: "Teacher successfully assigned to course",
             });
+
 
             form.reset();
             setDialogIsOpen(false);
@@ -114,12 +130,12 @@ export default function AddTeacherCourseForm({
                             {/* Teacher Select */}
                             <FormField
                                 control={form.control}
-                                name="teacher"
+                                name="teacherId"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Teacher</FormLabel>
                                         <Select
-                                            onValueChange={field.onChange}
+                                            onValueChange={(value) => field.onChange(Number(value))} // Convert to number
                                             value={field.value?.toString()}
                                             disabled={loadingData}
                                         >
@@ -144,15 +160,14 @@ export default function AddTeacherCourseForm({
                                 )}
                             />
 
-                            {/* Course Select */}
                             <FormField
                                 control={form.control}
-                                name="course"
+                                name="courseId"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Course</FormLabel>
                                         <Select
-                                            onValueChange={field.onChange}
+                                            onValueChange={(value) => field.onChange(Number(value))} // Convert to number
                                             value={field.value?.toString()}
                                             disabled={loadingData}
                                         >
@@ -177,6 +192,7 @@ export default function AddTeacherCourseForm({
                                 )}
                             />
 
+
                             <Button type="submit" disabled={isBeingAdded || loadingData}>
                                 {isBeingAdded ? (
                                     <>
@@ -189,6 +205,12 @@ export default function AddTeacherCourseForm({
                                         <span>Create Assignment</span>
                                     </>
                                 )}
+                            </Button>
+                            <Button
+                                className="bg-red-700 hover:bg-red-800 min-w-[250px] min-h-[40px]"
+                                onClick={(event) => console.log(form.formState.errors)}
+                            >
+                                DEBUG
                             </Button>
                         </form>
                     </Form>

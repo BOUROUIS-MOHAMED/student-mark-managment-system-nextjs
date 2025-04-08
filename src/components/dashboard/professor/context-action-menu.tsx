@@ -24,6 +24,7 @@ import Modal from "@/components/ui/modal";
 import {Teacher} from "@/app/dashboard/Models/Teacher";
 import EditTeacherForm from "@/components/dashboard/professor/form-professor-edit";
 import DeleteTeacher from "@/components/dashboard/professor/form-professor-delete";
+import {usePathname} from "next/navigation";
 
 
 
@@ -32,7 +33,7 @@ export default function ContextActionMenu({ teacher }: { teacher: Teacher }) {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
-
+  const pathname = usePathname(); // ⬅️ Get current path
   return (
     <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
       {/* Dropdown Menu Trigger Button */}
@@ -58,7 +59,7 @@ export default function ContextActionMenu({ teacher }: { teacher: Teacher }) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="#" className="flex cursor-not-allowed">
+          <Link href={`${pathname}/${teacher.id}`} className="flex cursor-pointer">
             <ExternalLink className="mr-2 h-4 w-4" />
             View info
           </Link>

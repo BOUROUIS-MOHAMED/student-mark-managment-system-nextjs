@@ -45,9 +45,9 @@ export const columns: ColumnDef<Pfe>[] = [
   },
 
   {
-    accessorKey: "capacity",
+    accessorKey: "status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Capacity" />
+      <DataTableColumnHeader column={column} title="Status" />
     ),
   },
   {

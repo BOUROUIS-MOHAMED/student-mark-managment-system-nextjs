@@ -62,6 +62,12 @@ export const columns: ColumnDef<Student>[] = [
         <DataTableColumnHeader column={column} title="Phone" />
     ),
   },
+  {
+    accessorKey: "classroom.name", // 'phone' for the professor's phone number
+    header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Classroom" />
+    ),
+  },
 
 
   {

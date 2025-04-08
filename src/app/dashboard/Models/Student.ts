@@ -3,7 +3,7 @@ import { User } from "./User";
 import { Base } from "./Base";
 
 export class Student extends Base {
-  id: number;
+  id?: number;
   name: string;
   email: string;
   phone: string;
@@ -21,7 +21,7 @@ export class Student extends Base {
                 updatedAt,
                 uuid
               }: {
-    id: number;
+    id?: number;
     name: string;
     email: string;
     phone: string;

@@ -36,9 +36,9 @@ export default  function Records() {
     return (
     <div className="flex flex-col justify-center">
       <div>
-        <h1 className="text-foreground text-2xl font-bold">Classroom</h1>
+        <h1 className="text-foreground text-2xl font-bold">Course student</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your school classroom data here.
+          Manage your students course data here.
         </p>
         <Separator className="mb-1 mt-4" />
       </div>

@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
+
 import { useState } from "react";
 
 
 import {
   Copy,
-  ExternalLink,
+
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -21,7 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Modal from "@/components/ui/modal";
-import EditPfeTeacherForm from "@/components/dashboard/pfe-teacher/form-pfe-teacher-edit";
 import DeletePfeTeacher from "@/components/dashboard/pfe-teacher/form-pfe-teacher-delete";
 import {PfeTeacher} from "@/app/dashboard/Models/PfeTeacher";
 
@@ -58,12 +57,7 @@ export default function ContextActionMenu({ pfeTeacher }: { pfeTeacher: PfeTeach
           Copy ID
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="#" className="flex cursor-not-allowed">
-            <ExternalLink className="mr-2 h-4 w-4" />
-            View info
-          </Link>
-        </DropdownMenuItem>
+
 
         {/* Modal - to edit records */}
         <Modal open={openEditModal} onOpenChange={setOpenEditModal}>
@@ -76,20 +70,7 @@ export default function ContextActionMenu({ pfeTeacher }: { pfeTeacher: PfeTeach
               Edit
             </DropdownMenuItem>
           </Modal.Trigger>
-          <Modal.Content title="Edit record">
-            <Modal.Header>
-              <Modal.Description>
-                Edit the details of this attendance record.
-              </Modal.Description>
-            </Modal.Header>
-            <EditPfeTeacherForm
-              pfeTeacher={pfeTeacher}
-              closeModalAndDropdown={() => {
-                setOpenEditModal(false);
-                setOpenDropdown(false);
-              }}
-            />
-          </Modal.Content>
+
         </Modal>
 
         <DropdownMenuSeparator />

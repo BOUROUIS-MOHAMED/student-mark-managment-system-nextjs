@@ -24,6 +24,7 @@ import Modal from "@/components/ui/modal";
 import {Note} from "@/app/dashboard/Models/Note";
 import EditNoteForm from "@/components/dashboard/result/form-note-edit";
 import DeleteNote from "@/components/dashboard/result/form-note-delete";
+import {usePathname} from "next/navigation";
 
 
 
@@ -33,7 +34,7 @@ export default function ContextActionMenu({ note }: { note: Note }) {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
-
+  const pathname = usePathname(); // ⬅️ Get current path
   return (
     <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
       {/* Dropdown Menu Trigger Button */}
@@ -51,7 +52,7 @@ export default function ContextActionMenu({ note }: { note: Note }) {
           className="cursor-pointer"
           onClick={() =>
             // Copies the attendance record ID to the clipboard
-            navigator.clipboard.writeText(note.id.toString())
+            navigator.clipboard.writeText(note.id!.toString())
           }
         >
           <Copy className="mr-2 h-4 w-4" />
@@ -59,7 +60,7 @@ export default function ContextActionMenu({ note }: { note: Note }) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="#" className="flex cursor-not-allowed">
+          <Link href={`${pathname}/${note.id}`} className="flex cursor-pointer">
             <ExternalLink className="mr-2 h-4 w-4" />
             View info
           </Link>

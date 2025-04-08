@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Modal from "@/components/ui/modal";
-import EditTeacherClassroomForm from "@/components/dashboard/teacher-classroom/form-teacher-classroom-edit";
+
 import DeleteTeacherClassroom from "@/components/dashboard/teacher-classroom/form-teacher-classroom-delete";
 import {TeacherClassroom} from "@/app/dashboard/Models/TeacherClassroom";
 
@@ -79,16 +79,10 @@ export default function ContextActionMenu({ teacherClassroom }: { teacherClassro
           <Modal.Content title="Edit record">
             <Modal.Header>
               <Modal.Description>
-                Edit the details of this attendance record.
+                You can&#39;t Edit the details of this attendance record.
               </Modal.Description>
             </Modal.Header>
-            <EditTeacherClassroomForm
-              teacherClassroom={teacherClassroom}
-              closeModalAndDropdown={() => {
-                setOpenEditModal(false);
-                setOpenDropdown(false);
-              }}
-            />
+
           </Modal.Content>
         </Modal>
 

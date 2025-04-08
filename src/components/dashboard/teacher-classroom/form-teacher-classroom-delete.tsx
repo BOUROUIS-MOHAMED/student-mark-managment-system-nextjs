@@ -29,7 +29,7 @@ export default function DeleteTeacherClassroom({
     <Button
       variant={"destructive"}
       onClick={async () => {
-        const response: ResponseModel<string> = await deleteTeacherClassroom(teacherClassroom.id.toString());
+        const response: ResponseModel<string> = await deleteTeacherClassroom(teacherClassroom.id.teacherId.toString(),teacherClassroom.id.classroomId.toString());
         if (response.status) {
           router.refresh();
           closeModalAndDropdown();

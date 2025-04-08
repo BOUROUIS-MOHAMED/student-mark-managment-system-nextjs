@@ -1,7 +1,7 @@
 import { Role } from "./Role";  // Assuming you have a Role model
 
 export class User {
-  id: number;
+  id: number | null;
   username: string;
   email: string;
   password: string;
@@ -15,10 +15,10 @@ export class User {
                 email,
                 password,
                 roles,
-      accessToken,
-      tokenType,
+                accessToken,
+                tokenType,
               }: {
-    id: number;
+    id: number | null;
     username: string;
     email: string;
     password: string;
@@ -34,6 +34,9 @@ export class User {
     this.accessToken = accessToken;
     this.tokenType = tokenType;
   }
+
+
+
 
   static fromJson(json: any): User {
     return new User({

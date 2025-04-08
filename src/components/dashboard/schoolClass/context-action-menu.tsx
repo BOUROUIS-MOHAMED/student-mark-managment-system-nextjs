@@ -24,6 +24,7 @@ import Modal from "@/components/ui/modal";
 import {Classroom} from "@/app/dashboard/Models/Classroom";
 import EditClassroomForm from "@/components/dashboard/schoolClass/form-classroom-edit";
 import DeleteClassroom from "@/components/dashboard/schoolClass/form-classroom-delete";
+import {usePathname} from "next/navigation";
 
 
 
@@ -33,7 +34,7 @@ export default function ContextActionMenu({ classroom }: { classroom: Classroom 
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
-
+  const pathname = usePathname(); // ⬅️ Get current path
   return (
     <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
       {/* Dropdown Menu Trigger Button */}
@@ -59,7 +60,7 @@ export default function ContextActionMenu({ classroom }: { classroom: Classroom 
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="#" className="flex cursor-not-allowed">
+          <Link href={`${pathname}/${classroom.id}`} className="flex cursor-pointer">
             <ExternalLink className="mr-2 h-4 w-4" />
             View info
           </Link>

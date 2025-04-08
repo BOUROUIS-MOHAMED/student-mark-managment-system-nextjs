@@ -24,7 +24,6 @@ import {updateCourse} from "@/app/dashboard/services/CourseService";
 
 
 const formSchema = z.object({
-
     description: z.string(),
     name: z.string().min(2).max(50),
 
@@ -50,11 +49,17 @@ export default function EditCourseForm({
     async function onSubmit(values: z.infer<typeof formSchema>) {
         // Check if user is allowed to update attendance records
 
+        const data = new Course({
+            description:values.description,
+            name: values.name,
+            // Remove hardcoded values that might cause server rejection
+            id: course.id,
+            uuid: course.uuid,
+            createdAt: course.createdAt,
+            updatedAt: course.updatedAt,
+        });
 
-
-
-        // Update the record if user is authorized
-        const response = await updateCourse(course);
+        const response = await updateCourse(data);
 
         if (response.status) {
             router.refresh();
@@ -64,8 +69,8 @@ export default function EditCourseForm({
                 description: "element updated successfully",
             });
         } else {
-
-            closeModalAndDropdown();
+           console.log(response);
+           // closeModalAndDropdown();
             toast({
                 title: "Error",
                 description: "cant update student",
@@ -84,47 +89,41 @@ export default function EditCourseForm({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Input field - for first name */}
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel> Name</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder=" Name"
-                    defaultValue={course.name}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            {/* Input field - for username */}
+            <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                            <Input defaultValue={course.name} placeholder="Name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
 
-          {/* Input field - for last name */}
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Input
 
-                    placeholder="Description"
-                    defaultValue={course.description}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            {/* Input field - for phone */}
+            <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                            <Input defaultValue={course.description}  placeholder="Description" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
 
 
 
-          {/* Submit button - uses state for loading spinner */}
+
+            {/* Submit button - uses state for loading spinner */}
           <Button type="submit">
             <>
               <Check className="mr-2 h-4 w-4" />

@@ -22,6 +22,9 @@ import { toast } from "@/components/ui/use-toast";
 
 import { CourseSchema } from "@/app/dashboard/Models/schema";
 
+import {Course} from "@/app/dashboard/Models/Course";
+import {createCourse} from "@/app/dashboard/services/CourseService";
+
 // Schema for form validation (using Zod)
 const FormSchema = CourseSchema;
 
@@ -39,16 +42,47 @@ export default function AddCourseForm() {
   });
 
   // Form submission function - called when the form is submitted (using react-hook-form)
-  function onSubmit(formData: z.infer<typeof FormSchema>) {
-    setIsBeingAdded(true);
-    // Logic for adding the professor (you would probably want to send formData to your API here)
-    toast({
-      title: "element Added",
-      description: `Element with ID ${formData.id} has been added successfully!`,
-    });
-    setIsBeingAdded(false);
-    setDialogIsOpen(false);
-  }
+    async function onSubmit(formData: z.infer<typeof FormSchema>) {
+
+        setIsBeingAdded(true);
+        try {
+            const data = new Course({
+                description:formData.description,
+                name: formData.name,
+                // Remove hardcoded values that might cause server rejection
+                id: -1,
+                uuid: undefined,
+                createdAt: undefined,
+                updatedAt: undefined,
+            });
+
+            const response = await createCourse(data);
+            console.log('API Response:', response); // Add logging
+
+            // Handle different response structures
+            if (response.status) {
+                toast({
+                    title: "Success",
+                    description: `Course ${formData.name} created successfully!`,
+                });
+                form.reset();
+                setDialogIsOpen(false);
+                setIsBeingAdded(false);
+            } else {
+
+                throw new Error(response.errorMsg || "Failed to create classroom");
+            }
+        } catch (error) {
+            console.error('Submission Error:', error);
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: error instanceof Error ? error.message : "Unknown error",
+            });
+        } finally {
+            setIsBeingAdded(false);
+        }
+    }
 
   return (
     <>

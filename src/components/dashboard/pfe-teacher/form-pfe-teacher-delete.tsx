@@ -29,7 +29,7 @@ export default function DeletePfeTeacher({
     <Button
       variant={"destructive"}
       onClick={async () => {
-        const response: ResponseModel<string> = await deletePfeTeacher(pfeTeacher.id.toString());
+        const response: ResponseModel<string> = await deletePfeTeacher(pfeTeacher.id.pfeId.toString(),pfeTeacher.id.teacherId.toString());
         if (response.status) {
           router.refresh();
           closeModalAndDropdown();

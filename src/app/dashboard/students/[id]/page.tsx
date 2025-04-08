@@ -1,23 +1,45 @@
-import React from 'react'
-import { api } from '@/app/trpc/server'
+"use client"
+import React, {useCallback, useEffect, useState} from 'react'
+import {Student} from "@/app/dashboard/Models/Student";
+import {getStudentById} from "@/app/dashboard/services/StudentService";
 
-export default async function IndividualStudentPage({
+
+export default  function IndividualStudentPage({
   params,
 }: {
   params: { id: string }
 }) {
-  const data = await api.student.getStudentById.query(params.id)
+  const [model, setModel] = useState<Student | null>(null);
+
+
+  const loadData = useCallback(async () => {
+    const response = await getStudentById(params.id);
+    console.log(response);
+
+    if (response.status) {
+      setModel(response.data!);
+
+    } else {
+
+      setModel(null);
+    }
+  }, []); // ✅ Dependencies are properly managed
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]); // ✅ No more infinite re-renders
+
 
   return (
     <div>
       <p>IndividualStudentPage</p>
-      {!data && <p>Error: Student doesn&apos;t exist with ID: {params.id}</p>}
-      {!!data && (
+      {!model && <p>Error: Student doesn&apos;t exist with ID: {params.id}</p>}
+      {!!model && (
         <div>
-          <p>{data.firstName}</p>
-          <p>{data.lastName}</p>
-          <p>{data.studentId}</p>
-          <p>{data.studentCardId}</p>
+          <p>{model.name}</p>
+          <p>{model.email}</p>
+          <p>{model.classroom!=null?model.classroom.name:""}</p>
+          <p>{model.createdAt.toLocaleString()}</p>
         </div>
       )}
     </div>

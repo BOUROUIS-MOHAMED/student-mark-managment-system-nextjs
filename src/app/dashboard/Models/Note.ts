@@ -3,7 +3,7 @@ import { Teacher } from "./Teacher";
 import {NoteType} from "@/app/dashboard/Models/enumeration/NoteType";  // Assuming Teacher class is in a separate file
 
 export class Note {
-  id: number;
+  id?: number;
   score: number;
   type: NoteType;
   student: Student;
@@ -16,7 +16,7 @@ export class Note {
                 student,
                 teacher,
               }: {
-    id: number;
+    id?: number;
     score: number;
     type: NoteType;
     student: Student;

@@ -28,7 +28,7 @@ export default function DeleteNote({
     <Button
       variant={"destructive"}
       onClick={async () => {
-        const response: ResponseModel<string> = await deleteNote(note.id.toString());
+        const response: ResponseModel<string> = await deleteNote(note.id!.toString());
         if (response.status) {
           router.refresh();
           closeModalAndDropdown();
