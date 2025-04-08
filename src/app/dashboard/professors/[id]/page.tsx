@@ -1,7 +1,7 @@
 "use client"
 import React, {useCallback, useEffect, useState} from "react";
 import {Teacher} from "@/app/dashboard/Models/Teacher";
-import {getAllTeachers, getTeacherById} from "@/app/dashboard/services/TeacherService";
+import { getTeacherById} from "@/app/dashboard/services/TeacherService";
 
 
 export default  function IndividualStudentPage({
