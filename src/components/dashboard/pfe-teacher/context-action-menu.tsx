@@ -94,7 +94,7 @@ export default function ContextActionMenu({ pfeTeacher }: { pfeTeacher: PfeTeach
             </Modal.Header>
             <Modal.Footer>
               <DeletePfeTeacher
-                pfeTeacher={pfeTeacher}
+                semester={pfeTeacher}
                 closeModalAndDropdown={() => {
                   setOpenDeleteModal(false);
                   setOpenDropdown(false);

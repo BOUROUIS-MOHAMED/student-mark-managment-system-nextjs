@@ -17,7 +17,7 @@ export class Properties {
 
     public pfeURL;
 
-    public pfeTeacherURL;
+    public semesterURL;
 
     public teacherURL;
 
@@ -37,7 +37,7 @@ export class Properties {
         this.courseStudentsURL="/course-students";
         this.noteURL="/notes";
         this.pfeURL="/pfes";
-        this.pfeTeacherURL="/pfe-teacher";
+        this.semesterURL="/semester";
         this.studentsURL="/students";
         this.teacherClassroomURL="/teacher-classrooms";
         this.teacherURL="/teachers";

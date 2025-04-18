@@ -8,48 +8,99 @@ import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
-
-
+import { Checkbox } from "@/components/ui/checkbox";
 import { CourseSchema } from "@/app/dashboard/Models/schema";
-
-import {Course} from "@/app/dashboard/Models/Course";
-import {createCourse} from "@/app/dashboard/services/CourseService";
-
-// Schema for form validation (using Zod)
-const FormSchema = CourseSchema;
+import { Course } from "@/app/dashboard/Models/Course";
+import { createCourse } from "@/app/dashboard/services/CourseService";
+import { NoteType } from "@/app/dashboard/Models/enumeration/NoteType";
 
 export default function AddCourseForm() {
-  // State - used to close dialog after a professor is added
-  const [dialogIsOpen, setDialogIsOpen] = useState(false);
+    const [dialogIsOpen, setDialogIsOpen] = useState(false);
+    const [isBeingAdded, setIsBeingAdded] = useState(false);
 
-  // State - used for button loading spinners during professor creation
-  const [isBeingAdded, setIsBeingAdded] = useState(false);
+    const form = useForm<z.infer<typeof CourseSchema>>({
+        resolver: zodResolver(CourseSchema),
+        defaultValues: {
+            coefficientTdPercent: 34,
+            coefficientExamPercent: 33,
+            coefficientTpPercent: 33,
+            availableNoteTypes: [],
+        },
+    });
 
+    type PercentageField =
+        | "coefficientTdPercent"
+        | "coefficientExamPercent"
+        | "coefficientTpPercent";
 
-  // Form hook - used for form validation and submission logic (using react-hook-form)
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-  });
+    const updatePercentages = (changedField: PercentageField, newValue: number) => {
+        const currentValues = form.getValues();
+        const otherFields = ['coefficientTdPercent', 'coefficientExamPercent', 'coefficientTpPercent']
+            .filter(f => f !== changedField) as [PercentageField, PercentageField];
 
-  // Form submission function - called when the form is submitted (using react-hook-form)
-    async function onSubmit(formData: z.infer<typeof FormSchema>) {
+        // Calculate remaining percentage to distribute
+        const remaining = 100 - newValue;
+        const [firstField, secondField] = otherFields;
+        const currentFirst = currentValues[firstField];
+        const currentSecond = currentValues[secondField];
+        const total = currentFirst + currentSecond;
 
+        // Distribute remaining percentage proportionally
+        let firstValue = total === 0 ? remaining / 2 : (currentFirst / total) * remaining;
+        let secondValue = remaining - firstValue;
+
+        // Round to nearest 5
+        const roundTo5 = (num: number) => Math.round(num / 5) * 5;
+
+        firstValue = roundTo5(firstValue);
+        secondValue = roundTo5(secondValue);
+
+        // Ensure total doesn't exceed 100%
+        const totalAfterRound = newValue + firstValue + secondValue;
+        if (totalAfterRound !== 100) {
+            // Adjust the second field to compensate
+            secondValue -= (totalAfterRound - 100);
+            secondValue = Math.max(0, roundTo5(secondValue)); // Ensure non-negative
+        }
+
+        // Final validation
+        firstValue = Math.min(100, Math.max(0, firstValue));
+        secondValue = Math.min(100, Math.max(0, secondValue));
+
+        form.setValue(firstField, firstValue);
+        form.setValue(secondField, secondValue);
+        form.setValue(changedField, newValue);
+
+        // Final check and force total to 100 if needed
+        const finalTotal = newValue + firstValue + secondValue;
+        if (finalTotal !== 100) {
+            form.setValue(secondField, secondValue + (100 - finalTotal));
+        }
+    };
+    async function onSubmit(formData: z.infer<typeof CourseSchema>) {
         setIsBeingAdded(true);
         try {
+            const totalPercentage =
+                formData.coefficientTdPercent +
+                formData.coefficientExamPercent +
+                formData.coefficientTpPercent;
+
+            if (totalPercentage !== 100) {
+                throw new Error("Percentages must sum to 100%");
+            }
+
             const data = new Course({
-                description:formData.description,
-                name: formData.name,
-                // Remove hardcoded values that might cause server rejection
+                ...formData,
                 id: -1,
                 uuid: undefined,
                 createdAt: undefined,
@@ -57,23 +108,15 @@ export default function AddCourseForm() {
             });
 
             const response = await createCourse(data);
-            console.log('API Response:', response); // Add logging
 
-            // Handle different response structures
             if (response.status) {
-                toast({
-                    title: "Success",
-                    description: `Course ${formData.name} created successfully!`,
-                });
+                toast({ title: "Success", description: `Course ${formData.name} created!` });
                 form.reset();
                 setDialogIsOpen(false);
-                setIsBeingAdded(false);
             } else {
-
-                throw new Error(response.errorMsg || "Failed to create classroom");
+                throw new Error(response.errorMsg || "Failed to create course");
             }
         } catch (error) {
-            console.error('Submission Error:', error);
             toast({
                 variant: "destructive",
                 title: "Error",
@@ -84,76 +127,187 @@ export default function AddCourseForm() {
         }
     }
 
-  return (
-    <>
-      {/* Modal - used to create new professor */}
-      <Modal open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
-        <Modal.Trigger asChild>
-          <Button>
-            <Plus size={20} className="mr-2" />
-            Add Course
-          </Button>
-        </Modal.Trigger>
-        <Modal.Content title="Add Professor">
-          <div className="flex flex-col gap-4">
-            {/* Form - to add new professor */}
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                {/* Input field - for username */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-
-                {/* Input field - for phone */}
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Input  placeholder="Description" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-
-
-                {/* Submit button - uses state for loading spinner */}
-                <Button type="submit" disabled={isBeingAdded}>
-                  {isBeingAdded ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      <span>Adding...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="mr-2 h-4 w-4" />
-                      <span>Add Professor</span>
-                    </>
-                  )}
+    return (
+        <Modal open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
+            <Modal.Trigger asChild>
+                <Button>
+                    <Plus size={20} className="mr-2" />
+                    Add Course
                 </Button>
-              </form>
-            </Form>
-          </div>
-        </Modal.Content>
-      </Modal>
-    </>
-  );
+            </Modal.Trigger>
+            <Modal.Content title="Add New Course">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        {/* Name and Description */}
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Course Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Course name" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Description</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Course description" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Coefficient */}
+                        <FormField
+                            control={form.control}
+                            name="coefficient"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Coefficient</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            max="5"
+                                            step="0.1"
+                                            {...field}
+                                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Percentage Sliders */}
+                        <div className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="coefficientTdPercent"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>TD Percentage ({field.value}%)</FormLabel>
+                                        <FormControl>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                step="5"
+                                                {...field}
+                                                onChange={(e) => {
+                                                    const value = parseInt(e.target.value);
+                                                    updatePercentages('coefficientTdPercent', value);
+                                                }}
+                                                className="w-full"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="coefficientExamPercent"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Exam Percentage ({field.value}%)</FormLabel>
+                                        <FormControl>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                step="5"
+                                                {...field}
+                                                onChange={(e) => {
+                                                    const value = parseInt(e.target.value);
+                                                    updatePercentages('coefficientExamPercent', value);
+                                                }}
+                                                className="w-full"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="coefficientTpPercent"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>TP Percentage ({field.value}%)</FormLabel>
+                                        <FormControl>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                step="5"
+                                                {...field}
+                                                onChange={(e) => {
+                                                    const value = parseInt(e.target.value);
+                                                    updatePercentages('coefficientTpPercent', value);
+                                                }}
+                                                className="w-full"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {/* Note Types Checkboxes */}
+                        <FormField
+                            control={form.control}
+                            name="availableNoteTypes"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Available Note Types</FormLabel>
+                                    <div className="flex flex-wrap gap-4">
+                                        {Object.values(NoteType).map((type) => (
+                                            <div key={type} className="flex items-center gap-2">
+                                                <Checkbox
+                                                    checked={field.value?.includes(type)}
+                                                    onCheckedChange={(checked) => {
+                                                        const newValue = checked
+                                                            ? [...field.value, type]
+                                                            : field.value.filter((v) => v !== type);
+                                                        field.onChange(newValue);
+                                                    }}
+                                                />
+                                                <label className="text-sm">{type}</label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <Button type="submit" disabled={isBeingAdded} className="w-full">
+                            {isBeingAdded ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                "Create Course"
+                            )}
+                        </Button>
+                    </form>
+                </Form>
+            </Modal.Content>
+        </Modal>
+    );
 }

@@ -25,8 +25,9 @@ import {
 import { DataTablePagination } from "@/components/ui/data-table/pagination";
 import { DataTableViewOptions } from "@/components/ui/data-table/view-options";
 import { Input } from "@/components/ui/input";
-import DeleteSelectedPfeTeacher from "@/components/dashboard/pfe-teacher/delete-selected-records";
-import AddPfeTeacherForm from "@/components/dashboard/pfe-teacher/form-pfe-teacher-create";
+import DeleteSelectedSemester from "@/components/dashboard/pfe-teacher/delete-selected-records";
+import AddSemesterForm from "@/components/dashboard/pfe-teacher/form-pfe-teacher-create";
+import {Semester} from "@/app/dashboard/Models/Semester";
 
 
 
@@ -72,12 +73,12 @@ export function DataTable<TData, TValue>({
         <div className="flex gap-2">
           {/* Search Box - to filter records by student ID */}
           <Input
-            placeholder="Search by name ..."
+            placeholder="Search by year ..."
             defaultValue={
-              (table.getColumn("name")?.getFilterValue() as string) ?? ""
+              (table.getColumn("year")?.getFilterValue() as string) ?? ""
             }
             onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
+              table.getColumn("year")?.setFilterValue(event.target.value)
             }
             className="max-w-sm shrink-0"
           />
@@ -86,10 +87,10 @@ export function DataTable<TData, TValue>({
         </div>
         <div className="flex gap-2">
           {/* Delete Selected Records (Button) - used to delete multiple selected Attendance Records */}
-          <DeleteSelectedPfeTeacher table={table} />
+          <DeleteSelectedSemester table={table} />
 
           {/* Create New Records (Modal + Form) - used to create new Attendance Records */}
-          <AddPfeTeacherForm />
+          <AddSemesterForm />
         </div>
       </div>
       <div className="rounded-md border">

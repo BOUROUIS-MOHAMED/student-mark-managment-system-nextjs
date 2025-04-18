@@ -32,9 +32,16 @@ export const columns: ColumnDef<TeacherCourse>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id", // Use 'id' as the student ID field
+    accessorKey: "id.teacherId", // Use 'id' as the student ID field
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID" />
+      <DataTableColumnHeader column={column} title="Teacher ID" />
+    ),
+    enableHiding: false,
+  },
+  {
+    accessorKey: "id.courseId", // Use 'id' as the student ID field
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Course ID" />
     ),
     enableHiding: false,
   },

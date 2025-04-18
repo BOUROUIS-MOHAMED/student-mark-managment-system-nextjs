@@ -4,25 +4,25 @@ import { columns } from "./columns";
 import { DataTable } from "./data-table";
 
 import {useCallback, useEffect, useState} from "react";
-import {PfeTeacher} from "@/app/dashboard/Models/PfeTeacher";
-import {getAllPfeTeachers} from "@/app/dashboard/services/PfeTeachersService";
+import {getAllSemesters} from "@/app/dashboard/services/SemesterService";
+import {Semester} from "@/app/dashboard/Models/Semester";
 
 export default  function Records() {
   // Fetch students info from database
 
-    const [pfeTeachers, setPfeTeachers] = useState<PfeTeacher[]>([]);
+    const [semesters, setSemesters] = useState<Semester[]>([]);
 
 
     const loadData = useCallback(async () => {
-        const response = await getAllPfeTeachers();
+        const response = await getAllSemesters();
         console.log(response);
 
         if (response.status) {
-            setPfeTeachers(response.data!);
+            setSemesters(response.data!);
 
         } else {
 
-            setPfeTeachers([]);
+            setSemesters([]);
         }
     }, []); // ✅ Dependencies are properly managed
 
@@ -34,9 +34,9 @@ export default  function Records() {
     return (
     <div className="flex flex-col justify-center">
       <div>
-        <h1 className="text-foreground text-2xl font-bold">PFE</h1>
+        <h1 className="text-foreground text-2xl font-bold">Semesters</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your Pfe data here.
+          Manage your Semester data here.
         </p>
         <Separator className="mb-1 mt-4" />
       </div>
@@ -44,7 +44,7 @@ export default  function Records() {
       {/* Card - Contains table and button to add new students */}
       <div>
         {/* Table - To display Attendance Records */}
-        <DataTable columns={columns} data={pfeTeachers} />
+        <DataTable columns={columns} data={semesters} />
       </div>
     </div>
   );

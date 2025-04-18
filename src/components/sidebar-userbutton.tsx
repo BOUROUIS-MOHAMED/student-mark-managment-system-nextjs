@@ -1,7 +1,6 @@
 "use client";
 
 import { LogOut, Settings, User } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -12,8 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Cookies from "js-cookie";
+import {useRouter} from "next/navigation";
 
 export default function SidebarUserButton() {
+  const router = useRouter();
   return (
     <>
       {/* Account Dropdown - to logout (and manage profile later) */}
@@ -51,7 +53,10 @@ export default function SidebarUserButton() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive w-full cursor-pointer"
-                onClick={() => signOut()}
+                onClick={() => {
+                  Cookies.remove("token");
+                  router.push("/signin");
+                }}
               >
                 <LogOut size={18} className="mr-2" />
                 Log out

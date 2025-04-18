@@ -5,6 +5,8 @@ import SidebarNavlinks from "@/components/sidebar-navlinks";
 import SidebarUserButton from "@/components/sidebar-userbutton";
 import { ModeToggle } from "@/components/theme-toggle";
 
+import * as React from "react";
+
 export default function Sidebar() {
     return (
         <aside className="border-border bg-background hidden h-screen border-r-[1px] px-3 py-4 md:flex md:flex-col">
@@ -23,6 +25,8 @@ export default function Sidebar() {
                     <SidebarNavlinks />
                 </Suspense>
             </div>
+
+
 
             {/* Footer (Theme toggle) */}
             <div className="flex items-center justify-center gap-4 rounded-lg p-2 text-sm">

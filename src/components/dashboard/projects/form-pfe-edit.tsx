@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,10 +20,21 @@ import {
 } from "@/components/ui/form";
 import { Status } from "@/app/dashboard/Models/enumeration/Status";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {PfeSchema} from "@/app/dashboard/Models/schema";
+import { PfeSchema } from "@/app/dashboard/Models/schema";
+import { getAllStudents } from "@/app/dashboard/services/StudentService";
+import { getAllTeachers } from "@/app/dashboard/services/TeacherService";
+import { Student } from "@/app/dashboard/Models/Student";
+import { Teacher } from "@/app/dashboard/Models/Teacher";
+import { useEffect, useState } from "react";
+import Modal from "@/components/ui/modal";
 
-// Use the same schema as create form
-const formSchema =PfeSchema;
+const getAvailableStudents = (students: Student[], excludedIds: number[]) => {
+    return students.filter(student => !excludedIds.includes(student.id!));
+};
+
+const getAvailableTeachers = (teachers: Teacher[], excludedIds: number[]) => {
+    return teachers.filter(teacher => !excludedIds.includes(teacher.id!));
+};
 
 export default function EditPfeForm({
                                         pfe,
@@ -34,93 +45,483 @@ export default function EditPfeForm({
 }) {
     const router = useRouter();
     const { toast } = useToast();
+    const [students, setStudents] = useState<Student[]>([]);
+    const [teachers, setTeachers] = useState<Teacher[]>([]);
+    const [loadingData, setLoadingData] = useState(true);
+    const [isBeingUpdated, setIsBeingUpdated] = useState(false);
 
-    // Initialize form with pfe data
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof PfeSchema>>({
+        resolver: zodResolver(PfeSchema),
         defaultValues: {
+            id: pfe.id,
             name: pfe.name,
+            date: pfe.date,
             status: pfe.status,
+            student_one_id: pfe.student_one.id,
+            student_two_id: pfe.student_two?.id,
+            supervisor_id: pfe.supervisor?.id,
+            president_id: pfe.president?.id,
+            rapporteur_id: pfe.rapporteur?.id,
+            guest: pfe.guest || "",
+            note_student_one: pfe.note_student_one,
+            note_student_two: pfe.note_student_two || undefined,
+            link_report: pfe.link_report || "",
+            link_presentation: pfe.link_presentation || "",
+            link_certificate: pfe.link_certificate || "",
+            information: pfe.information || "",
+            createdAt: pfe.createdAt,
+            updatedAt: pfe.updatedAt,
+            uuid: pfe.uuid,
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    const watchedStudentIds = form.watch(['student_one_id', 'student_two_id']);
+    const watchedTeacherIds = form.watch(['supervisor_id', 'president_id', 'rapporteur_id']);
+
+    const filterIds = (ids: (number | undefined)[]) =>
+        ids.filter((id): id is number => id !== undefined);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [studentsData, teachersData] = await Promise.all([
+                    getAllStudents(),
+                    getAllTeachers(),
+                ]);
+                setStudents(studentsData.data);
+                setTeachers(teachersData.data);
+            } catch (error) {
+                toast({
+                    variant: "destructive",
+                    title: "Loading Error",
+                    description: "Failed to load required data",
+                });
+            } finally {
+                setLoadingData(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    async function onSubmit(formData: z.infer<typeof PfeSchema>) {
+        setIsBeingUpdated(true);
         try {
-            // Create updated Pfe object
             const updatedPfe = new Pfe({
                 ...pfe,
-                name: values.name,
-                status: values.status,
+                ...formData,
+                student_one: students.find(s => s.id === formData.student_one_id)!,
+                student_two: formData.student_two_id ? students.find(s => s.id === formData.student_two_id) : undefined,
+                supervisor: formData.supervisor_id ? teachers.find(t => t.id === formData.supervisor_id)! : undefined,
+                president: formData.president_id ? teachers.find(t => t.id === formData.president_id)! : undefined,
+                rapporteur: formData.rapporteur_id ? teachers.find(t => t.id === formData.rapporteur_id)! : undefined,
+                updatedAt: new Date(),
             });
 
             const response = await updatePfe(updatedPfe);
 
             if (response.status) {
+                toast({
+                    title: "Success",
+                    description: `PFE "${formData.name}" updated successfully!`,
+                });
                 router.refresh();
                 closeModalAndDropdown();
-                toast({
-                    title: "Updated",
-                    description: "PFE updated successfully",
-                });
             } else {
                 throw new Error(response.errorMsg || "Failed to update PFE");
             }
         } catch (error) {
-            closeModalAndDropdown();
             toast({
+                variant: "destructive",
                 title: "Error",
-                description: error instanceof Error ? error.message : "Unknown error occurred",
+                description: error instanceof Error ? error.message : "Unknown error",
             });
+        } finally {
+            setIsBeingUpdated(false);
         }
     }
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel>Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+        <Modal open={true} onOpenChange={closeModalAndDropdown}>
+            <Modal.Content title="Edit PFE">
+                <div className="flex flex-col gap-4 max-h-[80vh] overflow-y-auto">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Name Field */}
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Project Name*</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Status</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {Object.values(Status).map((status) => (
-                                        <SelectItem key={status} value={status}>
-                                            {status}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                                <FormField
+                                    control={form.control}
+                                    name="date"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Presentation Date*</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="date"
+                                                    {...field}
+                                                    value={field.value ? field.value.toISOString().split('T')[0] : ''}
+                                                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {/* Student One */}
+                                <FormField
+                                    control={form.control}
+                                    name="student_one_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Primary Student*</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={field.value?.toString()}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select primary student" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {students.map((student) => (
+                                                        <SelectItem
+                                                            key={student.id}
+                                                            value={student.id!.toString()}
+                                                        >
+                                                            {student.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                <Button type="submit">
-                    <Check className="mr-2 h-4 w-4" />
-                    <span>Save changes</span>
-                </Button>
-            </form>
-        </Form>
+                                {/* Student Two */}
+                                <FormField
+                                    control={form.control}
+                                    name="student_two_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Secondary Student</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={field.value?.toString()}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select secondary student" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {getAvailableStudents(
+                                                        students,
+                                                        filterIds([watchedStudentIds[0]])
+                                                    ).map((student) => (
+                                                        <SelectItem
+                                                            key={student.id}
+                                                            value={student.id!.toString()}
+                                                        >
+                                                            {student.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Supervisor */}
+                                <FormField
+                                    control={form.control}
+                                    name="supervisor_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Supervisor</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={field.value?.toString()}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select supervisor" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {getAvailableTeachers(
+                                                        teachers,
+                                                        filterIds([watchedTeacherIds[1], watchedTeacherIds[2]])
+                                                    ).map((teacher) => (
+                                                        <SelectItem
+                                                            key={teacher.id}
+                                                            value={teacher.id!.toString()}
+                                                        >
+                                                            {teacher.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* President */}
+                                <FormField
+                                    control={form.control}
+                                    name="president_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>President</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={field.value?.toString()}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select president" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {getAvailableTeachers(
+                                                        teachers,
+                                                        filterIds([watchedTeacherIds[0], watchedTeacherIds[2]])
+                                                    ).map((teacher) => (
+                                                        <SelectItem
+                                                            key={teacher.id}
+                                                            value={teacher.id!.toString()}
+                                                        >
+                                                            {teacher.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Rapporteur */}
+                                <FormField
+                                    control={form.control}
+                                    name="rapporteur_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Rapporteur</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(Number(value))}
+                                                value={field.value?.toString()}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select rapporteur" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {getAvailableTeachers(
+                                                        teachers,
+                                                        filterIds([watchedTeacherIds[0], watchedTeacherIds[1]])
+                                                    ).map((teacher) => (
+                                                        <SelectItem
+                                                            key={teacher.id}
+                                                            value={teacher.id!.toString()}
+                                                        >
+                                                            {teacher.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Guest */}
+                                <FormField
+                                    control={form.control}
+                                    name="guest"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Guest</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Notes Section */}
+                                <div className="col-span-2 grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="note_student_one"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Primary Student Note*</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="number"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="note_student_two"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Secondary Student Note</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="number"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                {/* Links Section */}
+                                <FormField
+                                    control={form.control}
+                                    name="link_report"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Report Link</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="link_presentation"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Presentation Link</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="link_certificate"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Certificate Link</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Information */}
+                                <FormField
+                                    control={form.control}
+                                    name="information"
+                                    render={({ field }) => (
+                                        <FormItem className="col-span-2">
+                                            <FormLabel>Additional Information</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type={"text"}
+                                                    {...field}
+                                                    className="min-h-[100px]"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Status */}
+                                <FormField
+                                    control={form.control}
+                                    name="status"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Status*</FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select status" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {Object.values(Status).map((status) => (
+                                                        <SelectItem key={status} value={status}>
+                                                            {status}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                            </div>
+
+                            <Button type="submit" disabled={isBeingUpdated} className="w-full">
+                                {isBeingUpdated ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check className="mr-2 h-4 w-4" />
+                                        Save Changes
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    </Form>
+                </div>
+            </Modal.Content>
+        </Modal>
     );
 }

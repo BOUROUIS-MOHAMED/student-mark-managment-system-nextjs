@@ -2,65 +2,68 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
-import {NoteSchema} from "@/app/dashboard/Models/schema";
+import { NoteSchema } from "@/app/dashboard/Models/schema";
+import { getAllTeachers } from "@/app/dashboard/services/TeacherService";
+import { Student } from "@/app/dashboard/Models/Student";
+import { getAllStudents } from "@/app/dashboard/services/StudentService";
+import { Note } from "@/app/dashboard/Models/Note";
+import { createNote } from "@/app/dashboard/services/NoteService";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { NoteType } from "@/app/dashboard/Models/enumeration/NoteType";
+import { getAllCourses } from "@/app/dashboard/services/CourseService";
+import { Course } from "@/app/dashboard/Models/Course";
+import { getAllSemesters } from "@/app/dashboard/services/SemesterService";
+import { Semester } from "@/app/dashboard/Models/Semester";
 import {Teacher} from "@/app/dashboard/Models/Teacher";
 
-import {getAllTeachers} from "@/app/dashboard/services/TeacherService";
-import {Student} from "@/app/dashboard/Models/Student";
-import {getAllStudents} from "@/app/dashboard/services/StudentService";
-import {Note} from "@/app/dashboard/Models/Note";
-import {createNote} from "@/app/dashboard/services/NoteService";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {NoteType} from "@/app/dashboard/Models/enumeration/NoteType";
-
-
-
-
-
 export default function AddNoteForm() {
-  // State - used to close dialog after a professor is added
-  const [dialogIsOpen, setDialogIsOpen] = useState(false);
-
-  // State - used for button loading spinners during professor creation
-  const [isBeingAdded, setIsBeingAdded] = useState(false);
-
+    const [dialogIsOpen, setDialogIsOpen] = useState(false);
+    const [isBeingAdded, setIsBeingAdded] = useState(false);
     const [teachers, setTeachers] = useState<Teacher[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [semesters, setSemesters] = useState<Semester[]>([]);
     const [loadingData, setLoadingData] = useState(true);
 
     const form = useForm<z.infer<typeof NoteSchema>>({
         resolver: zodResolver(NoteSchema),
     });
 
-    // Fetch initial data
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const teachersData = await getAllTeachers();
+                const [teachersData, studentsData, coursesData, semestersData] = await Promise.all([
+                    getAllTeachers(),
+                    getAllStudents(),
+                    getAllCourses(),
+                    getAllSemesters()
+                ]);
+
                 setTeachers(teachersData.data);
-                const studentData = await getAllStudents();
-                setStudents(studentData.data);
+                setStudents(studentsData.data);
+                setCourses(coursesData.data);
+                setSemesters(semestersData.data);
             } catch (error) {
                 toast({
                     variant: "destructive",
                     title: "Loading Error",
-                    description: "Failed to load teachers or courses",
+                    description: "Failed to load required data",
                 });
             } finally {
                 setLoadingData(false);
@@ -73,43 +76,41 @@ export default function AddNoteForm() {
     const onSubmit = async (formData: z.infer<typeof NoteSchema>) => {
         setIsBeingAdded(true);
         try {
-            // Find the selected teacher and course by id
-            const selectedTeacher = teachers.find((teacher) => teacher.id === formData.teacherId);
-            const selectedStudent = students.find((course) => course.id === formData.studentId);
+            // Find all related entities
+            const selectedTeacher = teachers.find(t => t.id === formData.teacherId);
+            const selectedStudent = students.find(s => s.id === formData.studentId);
+            const selectedCourse = courses.find(c => c.id === formData.courseId);
+            const selectedSemester = semesters.find(s => s.id === formData.semesterId);
 
-            console.log("selectedCourse", selectedStudent);
-            console.log("selectedTeacher", selectedTeacher);
-            if (!selectedTeacher || !selectedStudent) {
-                throw new Error("Invalid teacher or course selected");
+            if (!selectedTeacher || !selectedStudent || !selectedCourse || !selectedSemester) {
+                throw new Error("Invalid selection detected");
             }
 
-
-            // Create TeacherCourse model with ids set to -1
             const note = new Note({
                 id: undefined,
                 teacher: selectedTeacher,
                 student: selectedStudent,
-                type:formData.type,
-                score:formData.score
+                course: selectedCourse,
+                semester: selectedSemester,
+                type: formData.type,
+                score: formData.score
             });
-
 
             const response = await createNote(note);
 
-            if (!response.status) new Error("Failed to create assignment");
-            console.log("Successfully created teacher");
-            toast({
-                title: "Assignment Created",
-                description: "Teacher successfully assigned to course",
-            });
+            if (!response.status) throw new Error("Failed to create note");
 
+            toast({
+                title: "Note Created",
+                description: "Note successfully added",
+            });
 
             form.reset();
             setDialogIsOpen(false);
         } catch (error) {
             toast({
                 variant: "destructive",
-                title: "Assignment Failed",
+                title: "Creation Failed",
                 description: error instanceof Error ? error.message : "Unknown error occurred",
             });
         } finally {
@@ -117,169 +118,216 @@ export default function AddNoteForm() {
         }
     };
 
-  return (
-    <>
-      {/* Modal - used to create new professor */}
-      <Modal open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
-        <Modal.Trigger asChild>
-          <Button>
-            <Plus size={20} className="mr-2" />
-            Add Note
-          </Button>
-        </Modal.Trigger>
-        <Modal.Content title="Add Professor">
-          <div className="flex flex-col gap-4">
-            {/* Form - to add new professor */}
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                {/* Input field - for score */}
-                  <FormField
-                      control={form.control}
-                      name="score"
-                      render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                              <FormLabel>Score</FormLabel>
-                              <FormControl>
-                                  <Input
-                                      placeholder="Score"
-                                      type="number"
-                                      step="0.01"
-                                      {...field}
-                                  />
-                              </FormControl>
-                              <FormMessage />
-                          </FormItem>
-                      )}
-                  />
-
-
-                  <FormField
-                      control={form.control}
-                      name="type"
-                      render={({ field }) => (
-                          <FormItem>
-                              <FormLabel>Note Type</FormLabel>
-                              <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                  disabled={loadingData}
-                              >
-                                  <FormControl>
-                                      <SelectTrigger>
-                                          <SelectValue placeholder="Select note type" />
-                                      </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                      {Object.values(NoteType).map((type) => (
-                                          <SelectItem
-                                              key={type}
-                                              value={type}
-                                          >
-                                              {type}
-                                          </SelectItem>
-                                      ))}
-                                  </SelectContent>
-                              </Select>
-                              <FormMessage />
-                          </FormItem>
-                      )}
-                  />
-
-
-                  <FormField
-                      control={form.control}
-                      name="teacherId"
-                      render={({ field }) => (
-                          <FormItem>
-                              <FormLabel>Teacher</FormLabel>
-                              <Select
-                                  onValueChange={(value) => field.onChange(Number(value))} // Convert to number
-                                  value={field.value?.toString()}
-                                  disabled={loadingData}
-                              >
-                                  <FormControl>
-                                      <SelectTrigger>
-                                          <SelectValue placeholder="Select a teacher" />
-                                      </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                      {teachers.map((teacher) => (
-                                          <SelectItem
-                                              key={teacher.id}
-                                              value={teacher.id.toString()}
-                                          >
-                                              {teacher.name}
-                                          </SelectItem>
-                                      ))}
-                                  </SelectContent>
-                              </Select>
-                              <FormMessage />
-                          </FormItem>
-                      )}
-                  />
-
-                  <FormField
-                      control={form.control}
-                      name="studentId"
-                      render={({ field }) => (
-                          <FormItem>
-                              <FormLabel>Student</FormLabel>
-                              <Select
-                                  onValueChange={(value) => field.onChange(Number(value))} // Convert to number
-                                  value={field.value?.toString()}
-                                  disabled={loadingData}
-                              >
-                                  <FormControl>
-                                      <SelectTrigger>
-                                          <SelectValue placeholder="Select a course" />
-                                      </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                      {students.map((student) => (
-                                          <SelectItem
-                                              key={student.id}
-                                              value={student.id!.toString()}
-                                          >
-                                              {student.name}
-                                          </SelectItem>
-                                      ))}
-                                  </SelectContent>
-                              </Select>
-                              <FormMessage />
-                          </FormItem>
-                      )}
-                  />
-
-
-
-                {/* Submit button - uses state for loading spinner */}
-                <Button type="submit" disabled={isBeingAdded}>
-                  {isBeingAdded ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      <span>Adding...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="mr-2 h-4 w-4" />
-                      <span>Add Professor</span>
-                    </>
-                  )}
+    return (
+        <Modal open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
+            <Modal.Trigger asChild>
+                <Button>
+                    <Plus size={20} className="mr-2" />
+                    Add Note
                 </Button>
-                  <Button
-                      className="bg-red-700 hover:bg-red-800 min-w-[250px] min-h-[40px]"
-                      onClick={(event) => console.log(form.formState.errors)}
-                  >
-                      DEBUG
-                  </Button>
-              </form>
-            </Form>
-          </div>
-        </Modal.Content>
-      </Modal>
-    </>
-  );
+            </Modal.Trigger>
+            <Modal.Content title="Add New Note">
+                <div className="flex flex-col gap-4">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Score Input */}
+                                <FormField
+                                    control={form.control}
+                                    name="score"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Score*</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Score"
+                                                    type="number"
+                                                    step="0.01"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Note Type */}
+                                <FormField
+                                    control={form.control}
+                                    name="type"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Note Type*</FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select note type" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {Object.values(NoteType).map((type) => (
+                                                        <SelectItem key={type} value={type}>
+                                                            {type}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Student Selection */}
+                                <FormField
+                                    control={form.control}
+                                    name="studentId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Student*</FormLabel>
+                                            <Select
+                                                onValueChange={value => field.onChange(Number(value))}
+                                                value={field.value?.toString()}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select student" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {students.map(student => (
+                                                        <SelectItem
+                                                            key={student.id}
+                                                            value={student.id!.toString()}
+                                                        >
+                                                            {student.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Teacher Selection */}
+                                <FormField
+                                    control={form.control}
+                                    name="teacherId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Teacher*</FormLabel>
+                                            <Select
+                                                onValueChange={value => field.onChange(Number(value))}
+                                                value={field.value?.toString()}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select teacher" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {teachers.map(teacher => (
+                                                        <SelectItem
+                                                            key={teacher.id}
+                                                            value={teacher.id.toString()}
+                                                        >
+                                                            {teacher.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Course Selection */}
+                                <FormField
+                                    control={form.control}
+                                    name="courseId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Course*</FormLabel>
+                                            <Select
+                                                onValueChange={value => field.onChange(Number(value))}
+                                                value={field.value?.toString()}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select course" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {courses.map(course => (
+                                                        <SelectItem
+                                                            key={course.id}
+                                                            value={course.id!.toString()}
+                                                        >
+                                                            {course.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Semester Selection */}
+                                <FormField
+                                    control={form.control}
+                                    name="semesterId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Semester*</FormLabel>
+                                            <Select
+                                                onValueChange={value => field.onChange(Number(value))}
+                                                value={field.value?.toString()}
+                                                disabled={loadingData}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select semester" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {semesters.map(semester => (
+                                                        <SelectItem
+                                                            key={semester.id}
+                                                            value={semester.id!.toString()}
+                                                        >
+                                                            {semester.year}{":semester "}{semester.semester}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <Button type="submit" disabled={isBeingAdded} className="w-full">
+                                {isBeingAdded ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    "Create Note"
+                                )}
+                            </Button>
+                        </form>
+                    </Form>
+                </div>
+            </Modal.Content>
+        </Modal>
+    );
 }

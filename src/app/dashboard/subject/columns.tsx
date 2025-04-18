@@ -51,6 +51,31 @@ export const columns: ColumnDef<Course>[] = [
       <DataTableColumnHeader column={column} title="Description" />
     ),
   },
+
+  {
+    accessorKey: "coefficient",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Coefficient" />
+    ),
+  },
+  {
+    accessorKey: "coefficientDsPercent",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Coefficient Ds %" />
+    ),
+  },
+  {
+    accessorKey: "coefficientTpPercent",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Coefficient Tp %" />
+    ),
+  },
+  {
+    accessorKey: "coefficientExamPercent",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Coefficient Exam %" />
+    ),
+  },
   {
     accessorKey: "actions",
     header: "Actions",

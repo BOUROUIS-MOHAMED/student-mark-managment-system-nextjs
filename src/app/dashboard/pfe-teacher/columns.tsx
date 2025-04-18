@@ -4,11 +4,12 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table/column-header";
 import ContextActionMenu from "@/components/dashboard/pfe-teacher/context-action-menu";
-import {PfeTeacher} from "@/app/dashboard/Models/PfeTeacher";
+import {Semester} from "@/app/dashboard/Models/Semester";
 
 
 
-export const columns: ColumnDef<PfeTeacher>[] = [
+
+export const columns: ColumnDef<Semester>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -32,30 +33,24 @@ export const columns: ColumnDef<PfeTeacher>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id.pfeId", // Use 'id' as the student ID field
+    accessorKey: "id", // Use 'id' as the student ID field
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID Pfe" />
+      <DataTableColumnHeader column={column} title="ID" />
     ),
     enableHiding: false,
-  },
-  {
-    accessorKey: "id.teacherId", // Use 'id' as the student ID field
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID Teacher" />
-    ),
-    enableHiding: false,
-  },
-  {
-    accessorKey: "pfe.name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Pfe" />
-    ),
   },
 
+
   {
-    accessorKey: "teacher.name",
+    accessorKey: "year",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Teacher" />
+      <DataTableColumnHeader column={column} title="Year" />
+    ),
+  },
+  {
+    accessorKey: "semester",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Semester" />
     ),
   },
   {

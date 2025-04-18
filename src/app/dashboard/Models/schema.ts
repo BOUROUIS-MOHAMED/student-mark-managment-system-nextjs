@@ -67,6 +67,12 @@ const CourseSchema = z.object({
   id: z.number().optional(),
   name: z.string().min(3).max(100),
   description: z.string().max(500),
+  coefficient: z.number().min(0, "Coefficient must be positive").max(5,"cant be more than 5"),
+  coefficientTdPercent: z.number().min(0).max(100, "TD percentage must be between 0-100"),
+  coefficientExamPercent: z.number().min(0).max(100, "Exam percentage must be between 0-100"),
+  coefficientTpPercent: z.number().min(0).max(100, "TP percentage must be between 0-100"),
+  availableNoteTypes: z.array(z.nativeEnum(NoteType)).min(1, "At least one note type is require"),
+
 });
 
 const TeacherCourseSchema = z.object({
@@ -100,8 +106,24 @@ const EnrollmentSchema = z.object({
 // Project Schema
 const PfeSchema = z.object({
   id: z.number().optional(),
-  name: z.string().min(1).max(100),
-  status: z.enum([Status.COMPLETED,Status.IN_PROGRESS,Status.NOT_STARTED_YET]),
+  name: z.string(),
+  student_one_id: z.number(),
+  student_two_id: z.number().optional(),
+  supervisor_id: z.number().optional(),
+  president_id: z.number().optional(),
+  rapporteur_id: z.number().optional(),
+  guest: z.string().optional(),
+  date: z.coerce.date(),
+  note_student_one: z.number(),
+  note_student_two: z.number().optional(),
+  link_report: z.string().optional(),
+  link_presentation: z.string().optional(),
+  link_certificate: z.string().optional(),
+  information: z.string().optional(),
+  status: z.nativeEnum(Status),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+  uuid: z.string().optional(),
 });
 const CourseStudentSchema = z.object({
   id: CourseStudentIdSchema.optional(),
@@ -112,6 +134,8 @@ const CourseStudentSchema = z.object({
 const NoteSchema = z.object({
   id: z.number().optional(),
   studentId: z.number(),
+  courseId: z.number(),
+  semesterId: z.number(),
   teacherId: z.number(),
   score: z.coerce.number()
       .min(0, "Score must be at least 0")
@@ -119,10 +143,10 @@ const NoteSchema = z.object({
   type: z.enum([NoteType.DS, NoteType.TP, NoteType.EXAM]),
 });
 
-const PfeTeacherSchema = z.object({
+const semesterSchema = z.object({
 
-  teacherId: z.number(),
-  pfeId:z.number(),
+  year: z.string(),
+  semester:z.number(),
 
 });
 
@@ -134,7 +158,7 @@ export {
   TeacherCourseSchema,
   TeacherClassroomIdSchema,
   TeacherClassroomSchema,
-  PfeTeacherSchema,
+  semesterSchema,
   PfeTeacherIdSchema,
   UserSchema,
   StudentSchema,

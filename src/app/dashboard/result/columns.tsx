@@ -43,6 +43,12 @@ export const columns: ColumnDef<Note>[] = [
       <DataTableColumnHeader column={column} title="Score" />
     ),
   },
+  {
+    accessorKey: "course.name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Course" />
+    ),
+  },
 
   {
     accessorKey: "type",

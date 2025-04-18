@@ -84,7 +84,7 @@ const links = [
     newStatus: false,
   },
   {
-    name: "Pfe Teachers",
+    name: "Semesters",
     href: "/dashboard/pfe-teacher",
     icon: <BookCheck size={18} />,
     wipStatus: false,

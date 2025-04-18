@@ -7,16 +7,17 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import ResponseModel from "@/app/dashboard/Models/ResponseModel";
-import {PfeTeacher} from "@/app/dashboard/Models/PfeTeacher";
-import {deletePfeTeacher} from "@/app/dashboard/services/PfeTeachersService";
+import {deleteSemester} from "@/app/dashboard/services/SemesterService";
+import {Semester} from "@/app/dashboard/Models/Semester";
+
 
 
 
 export default function DeletePfeTeacher({
-  pfeTeacher,
+  semester,
   closeModalAndDropdown,
 }: {
-  pfeTeacher: PfeTeacher;
+  semester: Semester;
   closeModalAndDropdown: () => void;
 }) {
 
@@ -29,7 +30,7 @@ export default function DeletePfeTeacher({
     <Button
       variant={"destructive"}
       onClick={async () => {
-        const response: ResponseModel<string> = await deletePfeTeacher(pfeTeacher.id.pfeId.toString(),pfeTeacher.id.teacherId.toString());
+        const response: ResponseModel<string> = await deleteSemester(semester.id.toString());
         if (response.status) {
           router.refresh();
           closeModalAndDropdown();

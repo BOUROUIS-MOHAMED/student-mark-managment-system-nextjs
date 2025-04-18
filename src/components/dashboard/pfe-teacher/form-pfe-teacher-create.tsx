@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -15,89 +15,48 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import Modal from "@/components/ui/modal";
 import { toast } from "@/components/ui/use-toast";
 
-import { PfeTeacherSchema } from "@/app/dashboard/Models/schema";
-import { Teacher } from "@/app/dashboard/Models/Teacher"; // Assuming you have a Teacher model
-
-import { getAllTeachers } from "@/app/dashboard/services/TeacherService";
-import {getAllPfes} from "@/app/dashboard/services/PfeService";
-import {Pfe} from "@/app/dashboard/Models/Pfe";
-
-import {PfeTeacher} from "@/app/dashboard/Models/PfeTeacher";
-import {PfeTeacherId} from "@/app/dashboard/Models/embededIds/PfeTeacherId";
-import {createPfeTeacher} from "@/app/dashboard/services/PfeTeachersService"; // Assuming this function exists
+import { semesterSchema } from "@/app/dashboard/Models/schema";
+import {createSemester} from "@/app/dashboard/services/SemesterService";
+import {Semester} from "@/app/dashboard/Models/Semester";
+import {Input} from "@/components/ui/input"; // Assuming this function exists
 
 // Schema for form validation (using Zod)
-const FormSchema = PfeTeacherSchema;
+const FormSchema = semesterSchema;
 
 export default function AddPfeTeacherForm() {
     const [dialogIsOpen, setDialogIsOpen] = useState(false);
     const [isBeingAdded, setIsBeingAdded] = useState(false);
 
 
-    const [teachers, setTeachers] = useState<Teacher[]>([]);
-    const [pfes, setPfes] = useState<Pfe[]>([]);
-    const [loadingData, setLoadingData] = useState(true);
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
     });
 
-    // Fetch teachers and classrooms when the modal opens
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const teachersData = await getAllTeachers();
-                setTeachers(teachersData.data);
-                const pfesData = await getAllPfes();
-                setPfes(pfesData.data);
-            } catch (error) {
-                toast({
-                    variant: "destructive",
-                    title: "Loading Error",
-                    description: "Failed to load teachers or classrooms",
-                });
-            } finally {
-                setLoadingData(false);
-            }
-        };
-
-        if (dialogIsOpen) fetchData();
-    }, [dialogIsOpen]);
 
     // Form submission function
     async function onSubmit(formData: z.infer<typeof FormSchema>) {
         setIsBeingAdded(true);
         try {
-            // Find the selected teacher and course by id
-            const selectedTeacher = teachers.find((teacher) => teacher.id === formData.teacherId);
-            const selectedPfe = pfes.find((model) => model.id === formData.pfeId);
 
-            console.log("selectedPfe", selectedPfe);
-            console.log("selectedTeacher", selectedTeacher);
-            if (!selectedTeacher || !selectedPfe) {
-
-
-
-                throw new Error("Invalid teacher or course selected");
-            }
 
 
             // Create TeacherCourse model with ids set to -1
-            const pfeTeacher = new PfeTeacher({
-                id: new PfeTeacherId({teacherId: -1, pfeId: -1}),
-                teacher: selectedTeacher,
-                pfe: selectedPfe,
+            const semester = new Semester({
+                id: -1,
+                year: formData.year,
+                semester: formData.semester,
 
             });
 
 
 
 
-            const response = await createPfeTeacher(pfeTeacher);
+            const response = await createSemester(semester);
 
             if (!response.status) new Error("Failed to create assignment");
 
@@ -135,65 +94,39 @@ export default function AddPfeTeacherForm() {
                             {/* Teacher Select */}
                             <FormField
                                 control={form.control}
-                                name="teacherId"
+                                name="semester"
                                 render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Teacher</FormLabel>
-                                        <Select
-                                            onValueChange={(value) => field.onChange(Number(value))} // Convert to number
-                                            value={field.value?.toString()}
-                                            disabled={loadingData}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select a teacher" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {teachers.map((teacher) => (
-                                                    <SelectItem key={teacher.id} value={teacher.id.toString()}>
-                                                        {teacher.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Semester</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Semester"
+                                                type="number"
+                                                step="0.01"
+                                                {...field}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-
                             {/* Classroom Select */}
                             <FormField
                                 control={form.control}
-                                name="pfeId"
+                                name="year"
                                 render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Pfe</FormLabel>
-                                        <Select
-                                            onValueChange={(value) => field.onChange(Number(value))} // Convert to number
-                                            value={field.value?.toString()}
-                                            disabled={loadingData}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select a Pfe" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {pfes.map((pfe) => (
-                                                    <SelectItem key={pfe.id} value={pfe.id.toString()}>
-                                                        {pfe.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Year" {...field} />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
                             {/* Submit button */}
-                            <Button type="submit" disabled={isBeingAdded || loadingData}>
+                            <Button type="submit" disabled={isBeingAdded }>
                                 {isBeingAdded ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

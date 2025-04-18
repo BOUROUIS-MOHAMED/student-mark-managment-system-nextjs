@@ -45,9 +45,42 @@ export const columns: ColumnDef<Pfe>[] = [
   },
 
   {
+    accessorKey: "student_one.name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Student " />
+    ),
+  },
+  {
+    accessorKey: "student_two.name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Student" />
+    ),
+  },
+  {
+    accessorKey: "president.name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="President" />
+    ),
+  },  {
+    accessorKey: "supervisor.name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Supervisor" />
+    ),
+  },  {
+    accessorKey: "rapporteur.name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Rapporteur" />
+    ),
+  },  {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
+    ),
+  },
+  {
+    accessorKey: "date",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" />
     ),
   },
   {

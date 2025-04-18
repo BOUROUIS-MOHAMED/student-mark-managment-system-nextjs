@@ -71,16 +71,7 @@ export function DataTable<TData, TValue>({
         {/* Table Info (at top) - used to display controls to manipulate table data */}
         <div className="flex gap-2">
           {/* Search Box - to filter records by student ID */}
-          <Input
-            placeholder="Search by email ..."
-            defaultValue={
-              (table.getColumn("name")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm shrink-0"
-          />
+
           {/* Table View Options - to customize columns visible on data table */}
           <DataTableViewOptions table={table} />
         </div>
