@@ -1,6 +1,6 @@
 "use client";
 import { Separator } from "@/components/ui/separator";
-import { columns } from "./columns";
+import {getPfeColumns} from "./columns";
 import { DataTable } from "./data-table";
 
 import { useCallback, useEffect, useState } from "react";
@@ -8,7 +8,6 @@ import { Pfe } from "@/app/dashboard/Models/Pfe";
 import { getAllPfes } from "@/app/dashboard/services/PfeService";
 import {ERole} from "@/app/dashboard/Models/enumeration/ERole";
 import {Utility} from "@/app/dashboard/Models/Utility";
-
 
 
 export default  function Records() {
@@ -41,7 +40,7 @@ export default  function Records() {
             </div>
 
             <div>
-                <DataTable columns={columns} data={pfes} userRole={role} />
+                <DataTable columns={getPfeColumns(role)} data={pfes} userRole={role} />
             </div>
         </div>
     );

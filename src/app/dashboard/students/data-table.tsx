@@ -90,7 +90,7 @@ export function DataTable<TData, TValue>({
         </div>
 
         <div className="flex gap-2">
-          {userRole === ERole.ROLE_ADMIN || userRole === ERole.ROLE_MODERATOR ? (
+          {userRole === ERole.ROLE_ADMIN  ? (
               <>
                 <DeleteSelectedStudents table={table} />
                 <AddStudentForm />

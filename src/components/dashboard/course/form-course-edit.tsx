@@ -23,7 +23,7 @@ import { NoteType } from "@/app/dashboard/Models/enumeration/NoteType";
 import { CourseSchema } from "@/app/dashboard/Models/schema";
 
 type PercentageField =
-    | "coefficientTdPercent"
+    | "coefficientDsPercent"
     | "coefficientExamPercent"
     | "coefficientTpPercent";
 
@@ -47,7 +47,7 @@ export default function EditCourseForm({
 
     const updatePercentages = (changedField: PercentageField, newValue: number) => {
         const currentValues = form.getValues();
-        const otherFields = ['coefficientTdPercent', 'coefficientExamPercent', 'coefficientTpPercent']
+        const otherFields = ['coefficientDsPercent', 'coefficientExamPercent', 'coefficientTpPercent']
             .filter(f => f !== changedField) as [PercentageField, PercentageField];
 
         const remaining = 100 - newValue;
@@ -173,7 +173,7 @@ export default function EditCourseForm({
                 <div className="space-y-4">
                     <FormField
                         control={form.control}
-                        name="coefficientTdPercent"
+                        name="coefficientDsPercent"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>TD Percentage ({field.value}%)</FormLabel>
@@ -186,7 +186,7 @@ export default function EditCourseForm({
                                         {...field}
                                         onChange={(e) => {
                                             const value = parseInt(e.target.value);
-                                            updatePercentages('coefficientTdPercent', value);
+                                            updatePercentages('coefficientDsPercent', value);
                                         }}
                                         className="w-full"
                                     />

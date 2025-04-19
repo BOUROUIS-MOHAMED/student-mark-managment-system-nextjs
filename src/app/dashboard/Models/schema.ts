@@ -71,7 +71,7 @@ const CourseSchema = z.object({
   name: z.string().min(3).max(100),
   description: z.string().max(500),
   coefficient: z.number().min(0, "Coefficient must be positive").max(5,"cant be more than 5"),
-  coefficientTdPercent: z.number().min(0).max(100, "TD percentage must be between 0-100"),
+  coefficientDsPercent: z.number().min(0).max(100, "TD percentage must be between 0-100"),
   coefficientExamPercent: z.number().min(0).max(100, "Exam percentage must be between 0-100"),
   coefficientTpPercent: z.number().min(0).max(100, "TP percentage must be between 0-100"),
   availableNoteTypes: z.array(z.nativeEnum(NoteType)).min(1, "At least one note type is require"),

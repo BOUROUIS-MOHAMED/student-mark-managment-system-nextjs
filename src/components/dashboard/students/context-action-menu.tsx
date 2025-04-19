@@ -69,7 +69,7 @@ export default function ContextActionMenu({ student }: { student: Student }) {
             className="cursor-pointer"
             onClick={async () => {
               try {
-                await downloadStudentNotesPdf(student.uuid); // assuming `note.student.uuid` exists
+                await downloadStudentNotesPdf(student.id!=undefined?student.id.toString():""); // assuming `note.student.uuid` exists
               } catch (error) {
                 console.error("Failed to download PDF", error);
               }

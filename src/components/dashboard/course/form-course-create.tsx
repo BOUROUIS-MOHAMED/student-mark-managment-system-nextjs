@@ -31,7 +31,7 @@ export default function AddCourseForm() {
     const form = useForm<z.infer<typeof CourseSchema>>({
         resolver: zodResolver(CourseSchema),
         defaultValues: {
-            coefficientTdPercent: 34,
+            coefficientDsPercent: 34,
             coefficientExamPercent: 33,
             coefficientTpPercent: 33,
             availableNoteTypes: [],
@@ -39,13 +39,13 @@ export default function AddCourseForm() {
     });
 
     type PercentageField =
-        | "coefficientTdPercent"
+        | "coefficientDsPercent"
         | "coefficientExamPercent"
         | "coefficientTpPercent";
 
     const updatePercentages = (changedField: PercentageField, newValue: number) => {
         const currentValues = form.getValues();
-        const otherFields = ['coefficientTdPercent', 'coefficientExamPercent', 'coefficientTpPercent']
+        const otherFields = ['coefficientDsPercent', 'coefficientExamPercent', 'coefficientTpPercent']
             .filter(f => f !== changedField) as [PercentageField, PercentageField];
 
         // Calculate remaining percentage to distribute
@@ -91,7 +91,7 @@ export default function AddCourseForm() {
         setIsBeingAdded(true);
         try {
             const totalPercentage =
-                formData.coefficientTdPercent +
+                formData.coefficientDsPercent +
                 formData.coefficientExamPercent +
                 formData.coefficientTpPercent;
 
@@ -101,6 +101,7 @@ export default function AddCourseForm() {
 
             const data = new Course({
                 ...formData,
+
                 id: -1,
                 uuid: undefined,
                 createdAt: undefined,
@@ -152,6 +153,19 @@ export default function AddCourseForm() {
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Course Description</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Course Description" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
                         <FormField
                             control={form.control}
@@ -193,7 +207,7 @@ export default function AddCourseForm() {
                         <div className="space-y-4">
                             <FormField
                                 control={form.control}
-                                name="coefficientTdPercent"
+                                name="coefficientDsPercent"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>TD Percentage ({field.value}%)</FormLabel>
@@ -206,7 +220,7 @@ export default function AddCourseForm() {
                                                 {...field}
                                                 onChange={(e) => {
                                                     const value = parseInt(e.target.value);
-                                                    updatePercentages('coefficientTdPercent', value);
+                                                    updatePercentages('coefficientDsPercent', value);
                                                 }}
                                                 className="w-full"
                                             />

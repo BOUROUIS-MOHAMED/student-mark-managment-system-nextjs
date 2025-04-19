@@ -127,9 +127,9 @@ export async function deleteStudent(id: string): Promise<ResponseModel<string>> 
 }
 
 
-export async function downloadStudentNotesPdf(studentUuid: string) {
+export async function downloadStudentNotesPdf(studentId: string) {
     try {
-        const response = await client.get(`${properties.noteURL}/student/pdf?studentUuid=${studentUuid}`, {
+        const response = await client.get(`${properties.noteURL}/student/pdf?id=${studentId}`, {
             responseType: 'blob', // Required to handle binary file
         });
 
