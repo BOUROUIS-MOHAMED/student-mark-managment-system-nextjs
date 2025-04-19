@@ -84,7 +84,7 @@ export default function AddPfeTeacherForm() {
             <Modal.Trigger asChild>
                 <Button>
                     <Plus size={20} className="mr-2" />
-                    Add PFE-Teacher Association
+                    Add Semester
                 </Button>
             </Modal.Trigger>
             <Modal.Content title="Assign Teacher to PFE">
@@ -96,14 +96,15 @@ export default function AddPfeTeacherForm() {
                                 control={form.control}
                                 name="semester"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-col">
+                                    <FormItem>
                                         <FormLabel>Semester</FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Semester"
                                                 type="number"
-                                                step="0.01"
+                                                min="1"
+                                                max="4"
                                                 {...field}
+                                                onChange={(e) => field.onChange(parseInt(e.target.value))}
                                             />
                                         </FormControl>
                                         <FormMessage />

@@ -8,7 +8,6 @@ import {
   Home,
   LibraryBig,
   Presentation,
-  Settings,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -96,82 +95,62 @@ const links = [
     wipStatus: false,
     newStatus: false,
   },
-  {
-    name: "Logs",
-    href: "/dashboard/logs",
-    wipStatus: false,
-  },
-  {
-    name: "Settings",
-    href: "/dashboard/settings",
-    icon: <Settings size={18} />,
-    wipStatus: false,
-  },
+
 ];
 
 export default function SidebarNavlinks() {
   const pathname = usePathname();
   const userJson = Cookies.get("account");
-  let  isAdmin = true;
-  let  isTeacher = false;
-  let isStudent =false;
+
+  // Initialize all roles as false
+  let isAdmin = false;
+  let isTeacher = false;
+  let isStudent = false;
+
   if (userJson) {
-    console.log(userJson);
-    const parsed = JSON.parse(userJson);
-    const user = User.fromJson(parsed);  // Now it's a real User instance again!
-    console.log("Welcome back,", user.username);
-    const roles = user?.roles || [];
+    try {
+      const parsed = JSON.parse(userJson);
+      const user = User.fromJson(parsed);
 
-    console.log("The roles are: ", roles);
-
-    isAdmin = user.hasRole('ROLE_ADMIN');
-    isTeacher = user.hasRole('ROLE_MODERATOR');
-    isStudent = user.hasRole('ROLE_USER');
-
+      // Update roles based on actual user permissions
+      isAdmin = user.hasRole('ROLE_ADMIN');
+      isTeacher = user.hasRole('ROLE_MODERATOR');
+      isStudent = user.hasRole('ROLE_USER');
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+    }
   }
 
-
-
-
   const filteredLinks = links.filter(link => {
-    // Admins see everything
+    // No access if not logged in
+    if (!userJson) return false;
+
+    // Admin sees all
     if (isAdmin) return true;
 
-    // Teacher-specific restrictions
+    // Teacher access
     if (isTeacher) {
       return ![
-        'Teachers',
-        'Classes',
-        'Semesters',
-        'Logs',
-        'Courses',
-        'Settings',
-          'Course Students',
-
-        'Classes'
+        'Teachers', 'Classes', 'Semesters',
+        'Logs', 'Settings', 'Course Students'
       ].includes(link.name);
     }
 
-    // Student-specific restrictions
+    // Student access
     if (isStudent) {
       return ![
-        'Students',
-        'Teachers',
-        'Classes',
-        'Semesters',
-        'Logs',
-          'Courses',
-         'Settings',
-
-        'Teachers classroom',
-        'Teachers courses',
-        'Classes'
+        'Students', 'Teachers', 'Classes',
+        'Semesters', 'Logs', 'Settings',
+        'Teachers classroom', 'Teachers courses'
       ].includes(link.name);
     }
 
-    // Default visibility for unauthenticated/non-role users
-    return ![].includes(link.name);
+    // Default: no access for unrecognized roles
+    return false;
   });
+
+  // Don't render anything if no filtered links
+  if (filteredLinks.length === 0) return null;
 
   return (
       <div className="overflow-y-auto h-full max-h-screen pr-2">
