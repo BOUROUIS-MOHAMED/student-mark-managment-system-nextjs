@@ -27,23 +27,24 @@ import { DataTableViewOptions } from "@/components/ui/data-table/view-options";
 import { Input } from "@/components/ui/input";
 import DeleteSelectedCourseStudent from "@/components/dashboard/course-student/delete-selected-records";
 import AddCourseStudentForm from "@/components/dashboard/course-student/form-course-student-create";
+import { ERole } from "@/app/dashboard/Models/enumeration/ERole";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  userRole: ERole | undefined;
 }
 
 export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
-  // State for table options, e.g. sorting, column visibility, etc.
+                                           columns,
+                                           data,
+                                           userRole,
+                                         }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  // Create the table instance using the useReactTable hook and the options state above
   const table = useReactTable({
     data,
     columns,
@@ -64,81 +65,63 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <>
-      <div className="flex items-center justify-between py-4">
-        {/* Table Info (at top) - used to display controls to manipulate table data */}
-        <div className="flex gap-2">
-          {/* Search Box - to filter records by student ID */}
+      <>
+        <div className="flex items-center justify-between py-4">
+          <div className="flex gap-2">
+            <DataTableViewOptions table={table} />
+          </div>
 
-          {/* Table View Options - to customize columns visible on data table */}
-          <DataTableViewOptions table={table} />
+          <div className="flex gap-2">
+            {userRole === ERole.ROLE_ADMIN ? (
+                <>
+                  <DeleteSelectedCourseStudent table={table} />
+                  <AddCourseStudentForm />
+                </>
+            ) : null}
+          </div>
         </div>
-        <div className="flex gap-2">
-          {/* Delete Selected Records (Button) - used to delete multiple selected Attendance Records */}
-          <DeleteSelectedCourseStudent table={table} />
 
-          {/* Create New Records (Modal + Form) - used to create new Attendance Records */}
-          <AddCourseStudentForm />
-        </div>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          {/* Table Header */}
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                              ? null
+                              : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                    ))}
+                  </TableRow>
+              ))}
+            </TableHeader>
 
-          {/* Table Body */}
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="tabular-nums">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                      <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                        {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} className="tabular-nums">
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                        ))}
+                      </TableRow>
+                  ))
+              ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                      No results.
                     </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              // If no results, display this message instead
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        <div className="p-4 pb-6">
-          {/* Pagination - To navigate between pages of data */}
-          <DataTablePagination table={table} />
+                  </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          <div className="p-4 pb-6">
+            <DataTablePagination table={table} />
+          </div>
         </div>
-      </div>
-    </>
+      </>
   );
 }

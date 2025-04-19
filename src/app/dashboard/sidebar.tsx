@@ -15,7 +15,7 @@ export default function Sidebar() {
                 <Image src="/logo.png" width={26} height={26} alt="EXAMPLE" />
 
                 <Suspense>
-                    <SidebarUserButton />
+                    <SidebarUserButton   />
                 </Suspense>
             </div>
 

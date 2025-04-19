@@ -27,16 +27,18 @@ import { DataTableViewOptions } from "@/components/ui/data-table/view-options";
 import { Input } from "@/components/ui/input";
 import DeleteSelectedNote from "@/components/dashboard/result/delete-selected-records";
 import AddNoteForm from "@/components/dashboard/result/form-note-create";
+import {ERole} from "@/app/dashboard/Models/enumeration/ERole";
 
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  userRole: ERole | undefined;
 }
-
 export function DataTable<TData, TValue>({
   columns,
   data,
+  userRole,
 }: DataTableProps<TData, TValue>) {
   // State for table options, e.g. sorting, column visibility, etc.
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -84,12 +86,14 @@ export function DataTable<TData, TValue>({
           <DataTableViewOptions table={table} />
         </div>
         <div className="flex gap-2">
-          {/* Delete Selected Records (Button) - used to delete multiple selected Attendance Records */}
-          <DeleteSelectedNote table={table} />
-
-          {/* Create New Records (Modal + Form) - used to create new Attendance Records */}
-          <AddNoteForm />
+          {userRole === ERole.ROLE_ADMIN || userRole === ERole.ROLE_MODERATOR ? (
+              <>
+                <DeleteSelectedNote table={table} />
+                <AddNoteForm />
+              </>
+          ) : null}
         </div>
+
       </div>
       <div className="rounded-md border">
         <Table>

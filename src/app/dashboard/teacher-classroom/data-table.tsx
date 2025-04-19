@@ -24,20 +24,21 @@ import {
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/ui/data-table/pagination";
 import { DataTableViewOptions } from "@/components/ui/data-table/view-options";
-import { Input } from "@/components/ui/input";
-import DeleteSelectedClassroom from "@/components/dashboard/schoolClass/delete-selected-records";
-import AddClassroomForm from "@/components/dashboard/schoolClass/form-classroom-create";
 import AddTeacherClassroomForm from "@/components/dashboard/teacher-classroom/form-teacher-classroom-create";
+import {ERole} from "@/app/dashboard/Models/enumeration/ERole";
+import DeleteSelectedTeacherClassroom from "@/components/dashboard/teacher-classroom/delete-selected-records";
 
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  userRole: ERole;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+    userRole,
 }: DataTableProps<TData, TValue>) {
   // State for table options, e.g. sorting, column visibility, etc.
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -75,12 +76,14 @@ export function DataTable<TData, TValue>({
           {/* Table View Options - to customize columns visible on data table */}
           <DataTableViewOptions table={table} />
         </div>
-        <div className="flex gap-2">
-          {/* Delete Selected Records (Button) - used to delete multiple selected Attendance Records */}
-          <DeleteSelectedClassroom table={table} />
 
-          {/* Create New Records (Modal + Form) - used to create new Attendance Records */}
-          <AddTeacherClassroomForm />
+        <div className="flex gap-2">
+          {userRole === ERole.ROLE_ADMIN || userRole === ERole.ROLE_MODERATOR ? (
+              <>
+                <DeleteSelectedTeacherClassroom table={table} />
+                <AddTeacherClassroomForm />
+              </>
+          ) : null}
         </div>
       </div>
       <div className="rounded-md border">

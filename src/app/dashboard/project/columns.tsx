@@ -45,13 +45,13 @@ export const columns: ColumnDef<Pfe>[] = [
   },
 
   {
-    accessorKey: "student_one.name",
+    accessorKey: "studentOne.name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Student " />
     ),
   },
   {
-    accessorKey: "student_two.name",
+    accessorKey: "studentTwo.name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Student" />
     ),

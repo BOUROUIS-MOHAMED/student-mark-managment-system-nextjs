@@ -54,23 +54,23 @@ export default function AddPfeForm() {
         defaultValues: {
             date: undefined,
             status: Status.NOT_STARTED_YET,
-            student_one_id: undefined,
-            student_two_id: undefined,
+            studentOne_id: undefined,
+            studentTwo_id: undefined,
             supervisor_id: undefined,
             president_id: undefined,
             rapporteur_id: undefined,
             guest: "",
-            note_student_one: 0,
-            note_student_two: undefined,
-            link_report: "",
-            link_presentation: "",
-            link_certificate: "",
+            noteStudentOne: 0,
+            noteStudentTwo: undefined,
+            linkReport: "",
+            linkPresentation: "",
+            linkCertificate: "",
             information: "",
             name: ""
         },
     });
 
-    const watchedStudentIds = form.watch(['student_one_id', 'student_two_id']);
+    const watchedStudentIds = form.watch(['studentOne_id', 'studentTwo_id']);
     const watchedTeacherIds = form.watch(['supervisor_id', 'president_id', 'rapporteur_id']);
 
     const filterIds = (ids: (number | undefined)[]) =>
@@ -176,7 +176,7 @@ export default function AddPfeForm() {
                                 {/* Student One */}
                                 <FormField
                                     control={form.control}
-                                    name="student_one_id"
+                                    name="studentOne_id"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Primary Student*</FormLabel>
@@ -209,7 +209,7 @@ export default function AddPfeForm() {
                                 {/* Student Two */}
                                 <FormField
                                     control={form.control}
-                                    name="student_two_id"
+                                    name="studentTwo_id"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Secondary Student</FormLabel>
@@ -369,7 +369,7 @@ export default function AddPfeForm() {
                                 <div className="col-span-2 grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
-                                        name="note_student_one"
+                                        name="noteStudentOne"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Primary Student Note*</FormLabel>
@@ -387,7 +387,7 @@ export default function AddPfeForm() {
 
                                     <FormField
                                         control={form.control}
-                                        name="note_student_two"
+                                        name="noteStudentTwo"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Secondary Student Note</FormLabel>
@@ -407,7 +407,7 @@ export default function AddPfeForm() {
                                 {/* Links Section */}
                                 <FormField
                                     control={form.control}
-                                    name="link_report"
+                                    name="linkReport"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Report Link</FormLabel>
@@ -421,7 +421,7 @@ export default function AddPfeForm() {
 
                                 <FormField
                                     control={form.control}
-                                    name="link_presentation"
+                                    name="linkPresentation"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Presentation Link</FormLabel>
@@ -435,7 +435,7 @@ export default function AddPfeForm() {
 
                                 <FormField
                                     control={form.control}
-                                    name="link_certificate"
+                                    name="linkCertificate"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Certificate Link</FormLabel>

@@ -14,8 +14,9 @@ import {
 import Cookies from "js-cookie";
 import {useRouter} from "next/navigation";
 
-export default function SidebarUserButton() {
+export default function SidebarUserButton(    ) {
   const router = useRouter();
+
   return (
     <>
       {/* Account Dropdown - to logout (and manage profile later) */}
@@ -33,7 +34,7 @@ export default function SidebarUserButton() {
                 <div className="flex flex-col">
                   <p className="text-foreground truncate text-base">Mohamed</p>
                   <p className="text-muted-foreground truncate font-normal">
-                    example@gmail.com
+                    {"user name"}
                   </p>
                 </div>
               </DropdownMenuLabel>

@@ -6,13 +6,17 @@ import { DataTable } from "./data-table";
 import {useCallback, useEffect, useState} from "react";
 import {getAllStudents} from "@/app/dashboard/services/StudentService";
 import {Student} from "@/app/dashboard/Models/Student";
+import {ERole} from "@/app/dashboard/Models/enumeration/ERole";
+import {Utility} from "@/app/dashboard/Models/Utility";
 
 export default  function Records() {
     
     const [students, setStudents] = useState<Student[]>([]);
-    
+
+    const [role, setRole] = useState<ERole>(ERole.ROLE_USER);
 
     const loadData = useCallback(async () => {
+        setRole(Utility.getCurrentUserRole()??ERole.ROLE_USER);
         const response = await getAllStudents();
         console.log(response);
 
@@ -45,7 +49,7 @@ export default  function Records() {
       {/* Card - Contains table and button to add new students */}
       <div>
         {/* Table - To display Attendance Records */}
-        <DataTable columns={columns} data={students} />
+        <DataTable columns={columns} data={students} userRole={role} />
       </div>
     </div>
   );

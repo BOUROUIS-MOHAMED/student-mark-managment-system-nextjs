@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 
 import Cookies from "js-cookie";
 import {login} from "@/app/dashboard/services/UserService";
+import {User} from "@/app/dashboard/Models/User";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,12 +31,26 @@ export default function SignInForm() {
       if (isChecked) {
         // Persist cookie for 7 days
         Cookies.set("token", response.data.accessToken, { expires: 7 });
+
+
+
+
+
       } else {
         // Session cookie: no `expires` means it's cleared when the browser is closed
         Cookies.set("token", response.data.accessToken);
       }
+
+
+
+      const user = User.fromJson(response.data); // Create a real User instance
+      Cookies.set("account", JSON.stringify(user.toJson()), { expires: 7 });
+
+
+
       // Redirect to dashboard
       router.push("/dashboard");
+
     } else {
       setError(response.errorMsg || "Login failed. Please try again.");
     }

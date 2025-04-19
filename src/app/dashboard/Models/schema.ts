@@ -1,6 +1,9 @@
 import { z } from "zod";
 import {NoteType} from "@/app/dashboard/Models/enumeration/NoteType";
 import {Status} from "@/app/dashboard/Models/enumeration/Status";
+import Cookies from "js-cookie";
+import {ERole} from "@/app/dashboard/Models/enumeration/ERole";
+import {User} from "@/app/dashboard/Models/User";
 
 // Base User Schema
 const UserSchema = z.object({
@@ -107,18 +110,18 @@ const EnrollmentSchema = z.object({
 const PfeSchema = z.object({
   id: z.number().optional(),
   name: z.string(),
-  student_one_id: z.number(),
-  student_two_id: z.number().optional(),
+  studentOne_id: z.number(),
+  studentTwo_id: z.number().optional(),
   supervisor_id: z.number().optional(),
   president_id: z.number().optional(),
   rapporteur_id: z.number().optional(),
   guest: z.string().optional(),
   date: z.coerce.date(),
-  note_student_one: z.number(),
-  note_student_two: z.number().optional(),
-  link_report: z.string().optional(),
-  link_presentation: z.string().optional(),
-  link_certificate: z.string().optional(),
+  noteStudentOne: z.number(),
+  noteStudentTwo: z.number().optional(),
+  linkReport: z.string().optional(),
+  linkPresentation: z.string().optional(),
+  linkCertificate: z.string().optional(),
   information: z.string().optional(),
   status: z.nativeEnum(Status),
   createdAt: z.date().optional(),
@@ -149,6 +152,9 @@ const semesterSchema = z.object({
   semester:z.number(),
 
 });
+
+
+
 
 // Export all schemas
 export {

@@ -1,15 +1,15 @@
 "use client";
 
 import {
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnFiltersState,
   type SortingState,
+  useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
@@ -27,24 +27,24 @@ import { DataTableViewOptions } from "@/components/ui/data-table/view-options";
 import { Input } from "@/components/ui/input";
 import DeleteSelectedPfe from "@/components/dashboard/projects/delete-selected-records";
 import AddPfeForm from "@/components/dashboard/projects/form-pfe-create";
-
+import { ERole } from "@/app/dashboard/Models/enumeration/ERole";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  userRole: ERole;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  userRole,
 }: DataTableProps<TData, TValue>) {
-  // State for table options, e.g. sorting, column visibility, etc.
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  // Create the table instance using the useReactTable hook and the options state above
   const table = useReactTable({
     data,
     columns,
@@ -67,9 +67,7 @@ export function DataTable<TData, TValue>({
   return (
     <>
       <div className="flex items-center justify-between py-4">
-        {/* Table Info (at top) - used to display controls to manipulate table data */}
         <div className="flex gap-2">
-          {/* Search Box - to filter records by student ID */}
           <Input
             placeholder="Search by name ..."
             defaultValue={
@@ -80,40 +78,36 @@ export function DataTable<TData, TValue>({
             }
             className="max-w-sm shrink-0"
           />
-          {/* Table View Options - to customize columns visible on data table */}
           <DataTableViewOptions table={table} />
         </div>
-        <div className="flex gap-2">
-          {/* Delete Selected Records (Button) - used to delete multiple selected Attendance Records */}
-          <DeleteSelectedPfe table={table} />
 
-          {/* Create New Records (Modal + Form) - used to create new Attendance Records */}
-          <AddPfeForm />
-        </div>
+        {userRole === ERole.ROLE_ADMIN && (
+          <div className="flex gap-2">
+            <DeleteSelectedPfe table={table} />
+            <AddPfeForm />
+          </div>
+        )}
       </div>
+
       <div className="rounded-md border">
         <Table>
-          {/* Table Header */}
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
 
-          {/* Table Body */}
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
@@ -132,7 +126,6 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               ))
             ) : (
-              // If no results, display this message instead
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -145,7 +138,6 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
         <div className="p-4 pb-6">
-          {/* Pagination - To navigate between pages of data */}
           <DataTablePagination table={table} />
         </div>
       </div>

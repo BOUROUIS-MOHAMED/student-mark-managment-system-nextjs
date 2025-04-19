@@ -6,6 +6,8 @@ import { DataTable } from "./data-table";
 import {useCallback, useEffect, useState} from "react";
 import {TeacherCourse} from "@/app/dashboard/Models/TeacherCourse";
 import {getAllTeacherCourses} from "@/app/dashboard/services/TeacherCourseService";
+import {Utility} from "@/app/dashboard/Models/Utility";
+import {ERole} from "@/app/dashboard/Models/enumeration/ERole";
 
 
 
@@ -15,8 +17,10 @@ export default  function Records() {
 
     const [teacherCourse, setTeacherCourse] = useState<TeacherCourse[]>([]);
 
+    const [role, setRole] = useState<ERole>(ERole.ROLE_USER);
 
     const loadData = useCallback(async () => {
+        setRole(Utility.getCurrentUserRole()??ERole.ROLE_USER);
         const response = await getAllTeacherCourses();
         console.log(response);
 
@@ -47,7 +51,7 @@ export default  function Records() {
       {/* Card - Contains table and button to add new students */}
       <div>
         {/* Table - To display Attendance Records */}
-        <DataTable columns={columns} data={teacherCourse} />
+        <DataTable columns={columns} data={teacherCourse} userRole={role} />
       </div>
     </div>
   );

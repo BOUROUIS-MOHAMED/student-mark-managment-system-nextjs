@@ -42,8 +42,8 @@ interface ProjectModel {
   id: number;
   code: string;
   name: string;
-  student_one: StudentModel;
-  student_two: StudentModel;
+  studentOne: StudentModel;
+  studentTwo: StudentModel;
   encadrant: ProfessorModel;
   rapporteur: ProfessorModel;
   president_jury: ProfessorModel;

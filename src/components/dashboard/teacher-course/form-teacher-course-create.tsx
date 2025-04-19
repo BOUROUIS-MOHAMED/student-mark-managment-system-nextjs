@@ -37,7 +37,7 @@ interface Props {
     createTeacherCourse: (data: TeacherCourse) => Promise<Response>;
 }
 
-export default function AddTeacherCourseForm({  }: Props) {
+export default function AddTeacherCourseForm() {
     const [dialogIsOpen, setDialogIsOpen] = useState(false);
     const [isBeingAdded, setIsBeingAdded] = useState(false);
     const [teachers, setTeachers] = useState<Teacher[]>([]);

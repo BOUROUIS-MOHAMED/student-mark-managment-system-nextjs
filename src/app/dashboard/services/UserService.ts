@@ -16,10 +16,11 @@ export async function login(username:string,password:string): Promise<ResponseMo
     if (response.status === 200) {
       const data = response.data;
 
-      console.log(data);
+      console.log("the user from backend"+JSON.stringify(data));
 
       const model = User.fromJson(data);
 
+      console.log("the user role after parsing"+JSON.stringify( model));
       const result = new ResponseModel<User | null>(true, model, undefined, 'Operation completed');
 
       console.log(result);
@@ -32,3 +33,5 @@ export async function login(username:string,password:string): Promise<ResponseMo
     return new ResponseModel<User | null>(false, null, "An error occurred", undefined);
   }
 }
+
+

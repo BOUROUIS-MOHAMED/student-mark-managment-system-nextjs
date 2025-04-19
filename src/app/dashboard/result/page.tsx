@@ -1,38 +1,38 @@
-"use client"
+"use client";
 import { Separator } from "@/components/ui/separator";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 
-import {useCallback, useEffect, useState} from "react";
-import {Note} from "@/app/dashboard/Models/Note";
-import {getAllNotes} from "@/app/dashboard/services/NoteService";
+import { useCallback, useEffect, useState } from "react";
+import { Note } from "@/app/dashboard/Models/Note";
+import { getAllNotes } from "@/app/dashboard/services/NoteService";
 
+import { ERole } from "@/app/dashboard/Models/enumeration/ERole";
+import { Utility } from "@/app/dashboard/Models/Utility";
 
-export default  function Records() {
+export default function Records() {
   // Fetch students info from database
 
-    const [notes, setNotes] = useState<Note[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [role, setRole] = useState<ERole | undefined>(ERole.ROLE_USER);
 
+  const loadData = useCallback(async () => {
+    setRole(Utility.getCurrentUserRole());
+    const response = await getAllNotes();
+    console.log(response);
 
-    const loadData = useCallback(async () => {
-        const response = await getAllNotes();
-        console.log(response);
+    if (response.status) {
+      setNotes(response.data!);
+    } else {
+      setNotes([]);
+    }
+  }, []); // ✅ Dependencies are properly managed
 
-        if (response.status) {
-            setNotes(response.data!);
+  useEffect(() => {
+    loadData();
+  }, [loadData]); // ✅ No more infinite re-renders
 
-        } else {
-
-            setNotes([]);
-        }
-    }, []); // ✅ Dependencies are properly managed
-
-    useEffect(() => {
-        loadData();
-    }, [loadData]); // ✅ No more infinite re-renders
-
-
-    return (
+  return (
     <div className="flex flex-col justify-center">
       <div>
         <h1 className="text-foreground text-2xl font-bold">Notes</h1>
@@ -45,7 +45,7 @@ export default  function Records() {
       {/* Card - Contains table and button to add new students */}
       <div>
         {/* Table - To display Attendance Records */}
-        <DataTable columns={columns} data={notes} />
+        <DataTable columns={columns} data={notes} userRole={role} />
       </div>
     </div>
   );

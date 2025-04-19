@@ -57,17 +57,17 @@ export default function EditPfeForm({
             name: pfe.name,
             date: pfe.date,
             status: pfe.status,
-            student_one_id: pfe.student_one.id,
-            student_two_id: pfe.student_two?.id,
+            studentOne_id: pfe.studentOne.id,
+            studentTwo_id: pfe.studentTwo?.id,
             supervisor_id: pfe.supervisor?.id,
             president_id: pfe.president?.id,
             rapporteur_id: pfe.rapporteur?.id,
             guest: pfe.guest || "",
-            note_student_one: pfe.note_student_one,
-            note_student_two: pfe.note_student_two || undefined,
-            link_report: pfe.link_report || "",
-            link_presentation: pfe.link_presentation || "",
-            link_certificate: pfe.link_certificate || "",
+            noteStudentOne: pfe.noteStudentOne,
+            noteStudentTwo: pfe.noteStudentTwo || undefined,
+            linkReport: pfe.linkReport || "",
+            linkPresentation: pfe.linkPresentation || "",
+            linkCertificate: pfe.linkCertificate || "",
             information: pfe.information || "",
             createdAt: pfe.createdAt,
             updatedAt: pfe.updatedAt,
@@ -75,7 +75,7 @@ export default function EditPfeForm({
         },
     });
 
-    const watchedStudentIds = form.watch(['student_one_id', 'student_two_id']);
+    const watchedStudentIds = form.watch(['studentOne_id', 'studentTwo_id']);
     const watchedTeacherIds = form.watch(['supervisor_id', 'president_id', 'rapporteur_id']);
 
     const filterIds = (ids: (number | undefined)[]) =>
@@ -110,8 +110,8 @@ export default function EditPfeForm({
             const updatedPfe = new Pfe({
                 ...pfe,
                 ...formData,
-                student_one: students.find(s => s.id === formData.student_one_id)!,
-                student_two: formData.student_two_id ? students.find(s => s.id === formData.student_two_id) : undefined,
+                studentOne: students.find(s => s.id === formData.studentOne_id)!,
+                studentTwo: formData.studentTwo_id ? students.find(s => s.id === formData.studentTwo_id) : undefined,
                 supervisor: formData.supervisor_id ? teachers.find(t => t.id === formData.supervisor_id)! : undefined,
                 president: formData.president_id ? teachers.find(t => t.id === formData.president_id)! : undefined,
                 rapporteur: formData.rapporteur_id ? teachers.find(t => t.id === formData.rapporteur_id)! : undefined,
@@ -184,7 +184,7 @@ export default function EditPfeForm({
                                 {/* Student One */}
                                 <FormField
                                     control={form.control}
-                                    name="student_one_id"
+                                    name="studentOne_id"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Primary Student*</FormLabel>
@@ -217,7 +217,7 @@ export default function EditPfeForm({
                                 {/* Student Two */}
                                 <FormField
                                     control={form.control}
-                                    name="student_two_id"
+                                    name="studentTwo_id"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Secondary Student</FormLabel>
@@ -377,7 +377,7 @@ export default function EditPfeForm({
                                 <div className="col-span-2 grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
-                                        name="note_student_one"
+                                        name="noteStudentOne"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Primary Student Note*</FormLabel>
@@ -395,7 +395,7 @@ export default function EditPfeForm({
 
                                     <FormField
                                         control={form.control}
-                                        name="note_student_two"
+                                        name="noteStudentTwo"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Secondary Student Note</FormLabel>
@@ -415,7 +415,7 @@ export default function EditPfeForm({
                                 {/* Links Section */}
                                 <FormField
                                     control={form.control}
-                                    name="link_report"
+                                    name="linkReport"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Report Link</FormLabel>
@@ -429,7 +429,7 @@ export default function EditPfeForm({
 
                                 <FormField
                                     control={form.control}
-                                    name="link_presentation"
+                                    name="linkPresentation"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Presentation Link</FormLabel>
@@ -443,7 +443,7 @@ export default function EditPfeForm({
 
                                 <FormField
                                     control={form.control}
-                                    name="link_certificate"
+                                    name="linkCertificate"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Certificate Link</FormLabel>

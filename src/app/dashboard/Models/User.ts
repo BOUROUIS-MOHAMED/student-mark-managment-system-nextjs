@@ -1,4 +1,6 @@
-import { Role } from "./Role";  // Assuming you have a Role model
+import { Role } from "./Role";
+import Cookies from "js-cookie";
+import {ERole} from "@/app/dashboard/Models/enumeration/ERole";  // Assuming you have a Role model
 
 export class User {
   id: number | null;
@@ -38,7 +40,7 @@ export class User {
 
 
 
-  static fromJson(json: any): User {
+  public static fromJson(json: any): User {
     return new User({
       id: json.id,
       username: json.username,
@@ -50,7 +52,7 @@ export class User {
     });
   }
 
-  toJson(): any {
+  public toJson(): any {
     return {
       id: this.id,
       username: this.username,
@@ -59,4 +61,9 @@ export class User {
       roles: this.roles.map(role => role.toJson()),  // Assuming Role has a toJson method
     };
   }
+
+  public hasRole(roleName: string): boolean {
+    return this.roles.some(r => r.name === roleName);
+  }
+
 }
