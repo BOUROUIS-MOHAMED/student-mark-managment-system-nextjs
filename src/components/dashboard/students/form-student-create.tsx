@@ -26,6 +26,7 @@ import {getAllClassrooms} from "@/app/dashboard/services/ClassroomService";
 import {User} from "@/app/dashboard/Models/User";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {createStudent} from "@/app/dashboard/services/StudentService";
+import {Student} from "@/app/dashboard/Models/Student";
 
 // Schema for form validation (using Zod)
 const FormSchema = z.object({
@@ -94,12 +95,12 @@ export default function AddStudentForm() {
             });
 
 // Send only classroom ID reference
-            const classroomReference = formData.classroomId ? { id: formData.classroomId } : null;
+           // const classroomReference = formData.classroomId ? { id: formData.classroomId } : null;
 
 // Create student data without IDs
-            const data = {
+            const data:Student = new Student({
                 email: formData.email,
-                classroom: classroomReference,
+                classroom: classrooms.find(value => value.id==formData.classroomId)??null,
                 phone: formData.phone,
                 user: {
                     ...user.toJson(),
@@ -112,10 +113,10 @@ export default function AddStudentForm() {
                 name: formData.name,
                 // Omit these fields completely
                 id: undefined,
-                uuid: undefined,
-                createdAt: undefined,
-                updatedAt: undefined,
-            };
+                uuid: "",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
             console.log("student", data);
 
             const response = await createStudent(data);
@@ -295,7 +296,7 @@ export default function AddStudentForm() {
                 </Button>
                   <Button
                       className="bg-red-700 hover:bg-red-800 min-w-[250px] min-h-[40px]"
-                      onClick={(event) => console.log(form.formState.errors)}
+                      onClick={() => console.log(form.formState.errors)}
                   >
                       DEBUG
                   </Button>

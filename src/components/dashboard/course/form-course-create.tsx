@@ -153,19 +153,7 @@ export default function AddCourseForm() {
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Course Description</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Course Description" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+
 
                         <FormField
                             control={form.control}
@@ -193,9 +181,8 @@ export default function AddCourseForm() {
                                             type="number"
                                             min="0"
                                             max="5"
-                                            step="0.1"
                                             {...field}
-                                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                            onChange={(e) => field.onChange(parseInt(e.target.value))}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -210,7 +197,7 @@ export default function AddCourseForm() {
                                 name="coefficientDsPercent"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>TD Percentage ({field.value}%)</FormLabel>
+                                        <FormLabel>Ds Percentage ({field.value}%)</FormLabel>
                                         <FormControl>
                                             <input
                                                 type="range"

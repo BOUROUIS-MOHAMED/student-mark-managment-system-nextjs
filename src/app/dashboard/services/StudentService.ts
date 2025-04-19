@@ -17,7 +17,7 @@ export async function getStudentById(id:string): Promise<ResponseModel<Student |
 
             console.log(data);
 
-            const model = Pfe.fromJson(data);
+            const model = Student.fromJson(data);
 
             const result = new ResponseModel<Student | null>(true, model, undefined, 'Operation completed');
 
