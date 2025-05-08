@@ -160,9 +160,9 @@ export default function EditCourseForm({
                                     type="number"
                                     min="0"
                                     max="5"
-                                    step="0.1"
+                                    step="1"
                                     {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
                                 />
                             </FormControl>
                             <FormMessage />
