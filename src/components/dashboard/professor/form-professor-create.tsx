@@ -229,7 +229,7 @@ export default function AddProfessorForm() {
                           ) : (
                               <>
                                   <Plus className="mr-2 h-4 w-4" />
-                                  <span>Add Student</span>
+                                  <span>Add Professor</span>
                               </>
                           )}
                       </Button>
