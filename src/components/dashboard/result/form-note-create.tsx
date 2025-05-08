@@ -140,10 +140,10 @@ export default function AddNoteForm() {
                                             <FormLabel>Score*</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="Score"
                                                     type="number"
-                                                    step="0.01"
+                                                    step="0.25"
                                                     {...field}
+                                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                                 />
                                             </FormControl>
                                             <FormMessage />

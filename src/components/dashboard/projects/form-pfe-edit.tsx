@@ -173,7 +173,7 @@ export default function EditPfeForm({
                                                 <Input
                                                     type="date"
                                                     {...field}
-                                                    value={field.value ? field.value.toISOString().split('T')[0] : ''}
+                                                    value={field.value ? field.value.toString().split('T')[0] : ''}
                                                     onChange={(e) => field.onChange(new Date(e.target.value))}
                                                 />
                                             </FormControl>
@@ -385,7 +385,7 @@ export default function EditPfeForm({
                                                     <Input
                                                         type="number"
                                                         {...field}
-                                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -403,7 +403,7 @@ export default function EditPfeForm({
                                                     <Input
                                                         type="number"
                                                         {...field}
-                                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />

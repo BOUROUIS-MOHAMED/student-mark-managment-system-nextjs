@@ -1,9 +1,7 @@
 import { z } from "zod";
 import {NoteType} from "@/app/dashboard/Models/enumeration/NoteType";
 import {Status} from "@/app/dashboard/Models/enumeration/Status";
-import Cookies from "js-cookie";
-import {ERole} from "@/app/dashboard/Models/enumeration/ERole";
-import {User} from "@/app/dashboard/Models/User";
+
 
 // Base User Schema
 const UserSchema = z.object({
@@ -143,7 +141,7 @@ const NoteSchema = z.object({
   score: z.coerce.number()
       .min(0, "Score must be at least 0")
       .max(20, "Score cannot exceed 20"),
-  type: z.enum([NoteType.DS, NoteType.TP, NoteType.EXAM]),
+  type: z.nativeEnum(NoteType)
 });
 
 const semesterSchema = z.object({

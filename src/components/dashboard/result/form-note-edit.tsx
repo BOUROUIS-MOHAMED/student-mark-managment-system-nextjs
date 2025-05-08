@@ -47,9 +47,12 @@ export default function EditNoteForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             score: note.score,
-            type: note.type,
+            type:note.type,
             teacherId: note.teacher.id,
             studentId: note.student.id,
+
+            courseId:   note.course.id,
+            semesterId: note.semester.id,
         },
     });
 
@@ -74,7 +77,7 @@ export default function EditNoteForm({
             }
         };
         loadData();
-    }, []);
+    }, [toast]);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
@@ -127,7 +130,7 @@ export default function EditNoteForm({
                             <FormControl>
                                 <Input
                                     type="number"
-                                    step="0.01"
+                                    step="0.25"
                                     {...field}
                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                                 />
@@ -222,6 +225,12 @@ export default function EditNoteForm({
                         </FormItem>
                     )}
                 />
+              <Button
+                className="bg-red-700 hover:bg-red-800 min-w-[250px] min-h-[40px]"
+                onClick={() => console.log(form.formState.errors)}
+              >
+                DEBUG
+              </Button>
 
                 <Button type="submit" disabled={loading}>
                     {loading ? (
