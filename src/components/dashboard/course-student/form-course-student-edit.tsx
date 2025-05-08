@@ -84,12 +84,13 @@ export default function EditCourseStudentForm({
 
             const updatedCourseStudent = new CourseStudent({
                 id: new CourseStudentId({
-                    studentId: courseStudent.id.studentId,
-                    courseId: courseStudent.id.courseId,
+                    studentId: selectedStudent.id??courseStudent.id.studentId,
+                    courseId: selectedCourse.id??courseStudent.id.courseId,
                 }),
                 student: selectedStudent,
                 course: selectedCourse,
             });
+            console.log(updatedCourseStudent);
 
             const response = await updateCourseStudent(
                 courseStudent.id.courseId.toString(),

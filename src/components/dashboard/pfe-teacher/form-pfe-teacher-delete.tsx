@@ -13,7 +13,7 @@ import {Semester} from "@/app/dashboard/Models/Semester";
 
 
 
-export default function DeletePfeTeacher({
+export default function DeleteSemester({
   semester,
   closeModalAndDropdown,
 }: {

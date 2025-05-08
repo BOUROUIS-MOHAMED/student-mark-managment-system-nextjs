@@ -21,13 +21,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Modal from "@/components/ui/modal";
-import DeletePfeTeacher from "@/components/dashboard/pfe-teacher/form-pfe-teacher-delete";
-import {PfeTeacher} from "@/app/dashboard/Models/PfeTeacher";
+
+import { Semester } from "@/app/dashboard/Models/Semester";
+import DeleteSemester from "@/components/dashboard/pfe-teacher/form-pfe-teacher-delete";
 
 
 
 
-export default function ContextActionMenu({ pfeTeacher }: { pfeTeacher: PfeTeacher }) {
+
+export default function ContextActionMenu({ pfeTeacher }: { pfeTeacher: Semester }) {
   // State - to manage the open/close state of the modals and dropdown
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -60,18 +62,7 @@ export default function ContextActionMenu({ pfeTeacher }: { pfeTeacher: PfeTeach
 
 
         {/* Modal - to edit records */}
-        <Modal open={openEditModal} onOpenChange={setOpenEditModal}>
-          <Modal.Trigger asChild>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onSelect={(e) => e.preventDefault()}
-            >
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-          </Modal.Trigger>
 
-        </Modal>
 
         <DropdownMenuSeparator />
 
@@ -93,7 +84,7 @@ export default function ContextActionMenu({ pfeTeacher }: { pfeTeacher: PfeTeach
               </Modal.Description>
             </Modal.Header>
             <Modal.Footer>
-              <DeletePfeTeacher
+              <DeleteSemester
                 semester={pfeTeacher}
                 closeModalAndDropdown={() => {
                   setOpenDeleteModal(false);

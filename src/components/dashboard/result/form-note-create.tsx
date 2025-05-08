@@ -76,7 +76,7 @@ export default function AddNoteForm() {
     const onSubmit = async (formData: z.infer<typeof NoteSchema>) => {
         setIsBeingAdded(true);
         try {
-            // Find all related entities
+
             const selectedTeacher = teachers.find(t => t.id === formData.teacherId);
             const selectedStudent = students.find(s => s.id === formData.studentId);
             const selectedCourse = courses.find(c => c.id === formData.courseId);
